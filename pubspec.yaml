@@ -1,5 +1,5 @@
 name: paginated_items_builder
-description: Easier to display items in a list/grid view from your controllers directly or handling state internally. Supports pagination as well.
+description: Easier to display items in a list/grid view from your controllers directly or handling state internally with support for pagination.
 version: 0.0.1
 homepage: https://github.com/rithik-dev/paginated_items_builder
 
@@ -10,6 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  visibility_detector: ^0.2.2
+  shimmer: ^2.0.0
 
 dev_dependencies:
   flutter_lints: ^1.0.4
