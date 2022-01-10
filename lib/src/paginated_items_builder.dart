@@ -4,11 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:paginated_items_builder/src/custom_loader.dart';
 import 'package:paginated_items_builder/src/models/paginated_items_builder_config.dart';
 import 'package:paginated_items_builder/src/models/paginated_items_response.dart';
+import 'package:paginated_items_builder/src/pagination_items_state_handler.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-enum ItemsDisplayType { list, grid }
+/// enum used to check how the list items are to be rendered on the screen.
+/// Whether in a list view or a grid view.
+enum ItemsDisplayType {
+  /// Render the items in a list view
+  list,
 
+  /// Render the items in a grid view
+  grid,
+}
+
+/// Handles rendering the items on the screen. Can have [PaginationItemsStateHandler]
+/// as parent if state is not handled externally.
 class PaginatedItemsBuilder<T> extends StatefulWidget {
   const PaginatedItemsBuilder({
     Key? key,
@@ -18,7 +29,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.itemsDisplayType = ItemsDisplayType.list,
     this.shrinkWrap = false,
     this.paginate = true,
-    this.showResetIcon = true,
+    this.showRefreshIcon = true,
     this.neverScrollablePhysicsOnShrinkWrap = true,
     this.loader = const CustomLoader(),
     this.loaderItemsCount = 6,
@@ -36,26 +47,62 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   }) : super(key: key);
 
   final Future<void> Function(bool) fetchPageData;
+
+  /// Callback function which requires a widget that is rendered for each item.
+  /// Provides context, index of the item in the list and the item itself.
   final Widget Function(BuildContext, int, T) itemBuilder;
+
+  /// The response object whose contents are displayed.
   final PaginatedItemsResponse<T>? response;
+
+  /// Pass in a custom scroll controller if needed.
   final ScrollController? scrollController;
+
+  /// Scroll direction of the list/grid view
   final Axis scrollDirection;
+
   final bool shrinkWrap;
   final EdgeInsets? padding;
+
+  /// Useful when the [PaginatedItemsBuilder] is a child of another scrollable,
+  /// then the physics should be [NeverScrollableScrollPhysics] as it conflicts.
+  /// Hence, if true, it overrides the [shrinkWrap] property as [shrinkWrap]
+  /// should be true if the [PaginatedItemsBuilder] is inside another scrollable
+  /// widget.
   final bool neverScrollablePhysicsOnShrinkWrap;
+
+  /// The text to show if no items are present.
   final String? emptyText;
-  final bool showResetIcon;
+
+  /// If no items are there to display, shows a refresh icon to again call the
+  /// API to update the results.
+  final bool showRefreshIcon;
+
+  /// Whether to paginate a specific list of items or not. Defaults to true.
   final bool paginate;
+
+  /// Separator for items in a list view.
   final Widget? separatorWidget;
+
+  /// Limits the item count no matter what the length of the content is in the
+  /// [response.items].
   final int? maxLength;
+
+  /// The number of loader widgets to render before the data is fetched for the
+  /// first time.
   final int loaderItemsCount;
+
+  /// Whether to display items in a list view or grid view.
   final ItemsDisplayType itemsDisplayType;
+
+  /// The loader to render if mockItem not found from [PaginatedItemsBuilderConfig].
   final Widget loader;
 
-  // config
+  /// config
   static PaginatedItemsBuilderConfig? config;
 
-  // list
+  /// The gap between concurrent list items.
+  /// Has no effect if [separatorWidget] is not null.
   final double? listItemsGap;
 
   // grid
@@ -65,7 +112,8 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   final double? gridChildAspectRatio;
 
   @override
-  _PaginatedItemsBuilderState<T> createState() => _PaginatedItemsBuilderState<T>();
+  _PaginatedItemsBuilderState<T> createState() =>
+      _PaginatedItemsBuilderState<T>();
 }
 
 class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
@@ -119,11 +167,12 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   Widget _loaderBuilder() {
-    final mockItem = PaginatedItemsBuilder.config!.getByType<T>();
+    final mockItem = PaginatedItemsBuilder.config!.mockItemGetter<T>();
 
     Widget _buildLoader() => mockItem != null
         ? Shimmer.fromColors(
-            highlightColor: PaginatedItemsBuilder.config!.shimmerConfig.highlightColor,
+            highlightColor:
+                PaginatedItemsBuilder.config!.shimmerConfig.highlightColor,
             baseColor: PaginatedItemsBuilder.config!.shimmerConfig.baseColor,
             period: PaginatedItemsBuilder.config!.shimmerConfig.period,
             child: IgnorePointer(
@@ -151,7 +200,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
             text ?? PaginatedItemsBuilder.config!.noItemsTextGetter(itemName),
             style: PaginatedItemsBuilder.config!.noItemsTextStyle,
           ),
-          if (widget.showResetIcon)
+          if (widget.showRefreshIcon)
             IconButton(
               icon: Icon(
                 Icons.refresh,
@@ -176,7 +225,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     // });
     // }
 
-    PaginatedItemsBuilder.config ??= PaginatedItemsBuilderConfig.defaultConfig();
+    PaginatedItemsBuilder.config ??=
+        PaginatedItemsBuilderConfig.defaultConfig();
 
     super.initState();
   }

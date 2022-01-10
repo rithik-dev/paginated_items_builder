@@ -1,11 +1,12 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart' show CupertinoActivityIndicator;
 import 'package:flutter/material.dart';
+import 'package:paginated_items_builder/paginated_items_builder.dart';
 
+/// Default loader used for items used by the [PaginatedItemsBuilder] if no mockItem
+/// exists in the [PaginatedItemsBuilderConfig]'s [mockItemGetter] variable.
 class CustomLoader extends StatelessWidget {
-  static const id = 'CustomLoader';
-
   final Color? color;
   final double radius;
   final double padding;
