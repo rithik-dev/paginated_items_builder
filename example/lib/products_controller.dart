@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart' show BuildContext, ChangeNotifier;
 import 'package:paginated_items_builder/paginated_items_builder.dart';
-import '../example/product.dart';
+import 'product.dart';
 
 class ProductsController extends ChangeNotifier {
   // not necessary, just something I use, which makes the code better.

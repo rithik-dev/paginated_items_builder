@@ -53,9 +53,9 @@ class ProductsListWithoutController extends StatelessWidget {
       child: Scaffold(
         body: PaginationItemsStateHandler<Product>(
           pageFetchData: (reset) => updateProducts(
-            // reset: reset,
-            // showLoaderOnReset: reset,
-          ),
+              // reset: reset,
+              // showLoaderOnReset: reset,
+              ),
           itemsBuilder: (response, fetchPageData) {
             return PaginatedItemsBuilder<Product>(
               fetchPageData: fetchPageData,

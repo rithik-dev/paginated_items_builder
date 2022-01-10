@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:paginated_items_builder/src/custom_loader.dart';
 import 'package:paginated_items_builder/src/models/paginated_items_builder_config.dart';
 import 'package:paginated_items_builder/src/models/paginated_items_response.dart';
 import 'package:paginated_items_builder/src/pagination_items_state_handler.dart';
@@ -31,7 +30,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.paginate = true,
     this.showRefreshIcon = true,
     this.neverScrollablePhysicsOnShrinkWrap = true,
-    this.loader = const CustomLoader(),
+    this.loader = const CircularProgressIndicator.adaptive(),
     this.loaderItemsCount = 6,
     this.scrollController,
     this.padding,
