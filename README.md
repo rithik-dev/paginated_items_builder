@@ -1,8 +1,8 @@
 # PaginatedItemsBuilder For Flutter
 [![pub package](https://img.shields.io/pub/v/paginated_items_builder.svg)](https://pub.dev/packages/paginated_items_builder)
 [![likes](https://badges.bar/paginated_items_builder/likes)](https://pub.dev/packages/paginated_items_builder/score)
-[![popularity](https://badges.bar/paginated_items_builder/popularity)](https://pub.dev/packages/paginated_items_builder/score)
-[![pub points](https://badges.bar/paginated_items_builder/pub%20points)](https://pub.dev/packages/paginated_items_builder/score)
+[![popularity](https://badges.bar/paginated_items_builder/popularity)](https://pub.dev/packages/paginated_items_builder/popularity)
+[![pub points](https://badges.bar/paginated_items_builder/pub%20points)](https://pub.dev/packages/paginated_items_builder/pub%20points)
 
 *Easier to display items in a list/grid view from your controllers directly or handling state internally with support for pagination. 
 Saves the results in state to avoid unnecessary api calls everytime screen is pushed.*

@@ -1,3 +1,7 @@
+## [0.0.3] - 10/01/2022
+
+* Minor README fix
+
 ## [0.0.2] - 10/01/2022
 
 * Fixed web support (removed dart:io import)
