@@ -1,3 +1,7 @@
+## [0.0.4] - 10/01/2022
+
+* Fixed example app
+
 ## [0.0.3] - 10/01/2022
 
 * Minor README fix

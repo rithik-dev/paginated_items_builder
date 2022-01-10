@@ -1,6 +1,6 @@
 name: paginated_items_builder
 description: Easier to display items in a list/grid view from your controllers directly or handling state internally with support for pagination.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/rithik-dev/paginated_items_builder
 
 environment:

@@ -45,6 +45,7 @@ class ProductsListWithoutController extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  /// function which calls the API and returns obj
   Future<PaginatedItemsResponse<Product>?> updateProducts() async {}
 
   @override
