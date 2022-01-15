@@ -4,11 +4,17 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 /// The config for [PaginatedItemsBuilder].
 class PaginatedItemsBuilderConfig {
   PaginatedItemsBuilderConfig({
-    required this.shimmerConfig,
-    required this.mockItemGetter,
-    required this.noItemsTextGetter,
-    required this.noItemsTextStyle,
-  });
+    ShimmerConfig? shimmerConfig,
+    T? Function<T>()? mockItemGetter,
+    String Function(String name)? noItemsTextGetter,
+    this.noItemsTextStyle = const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 14,
+    ),
+  })  : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer(),
+        mockItemGetter = mockItemGetter ?? (<T>() {}),
+        noItemsTextGetter =
+            noItemsTextGetter ?? ((name) => "No ${name}s found!");
 
   /// Default config
   PaginatedItemsBuilderConfig.defaultConfig() {
@@ -63,10 +69,11 @@ class ShimmerConfig {
   late final Duration period;
 
   ShimmerConfig({
-    required this.baseColor,
-    required this.highlightColor,
-    required this.period,
-  });
+    Color? baseColor,
+    Color? highlightColor,
+    this.period = const Duration(milliseconds: 175),
+  })  : baseColor = baseColor ?? Colors.grey[300]!,
+        highlightColor = highlightColor ?? Colors.grey[200]!;
 
   /// default
   ShimmerConfig.defaultShimmer() {

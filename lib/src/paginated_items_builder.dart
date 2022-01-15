@@ -30,7 +30,9 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.paginate = true,
     this.showRefreshIcon = true,
     this.neverScrollablePhysicsOnShrinkWrap = true,
-    this.loader = const CircularProgressIndicator.adaptive(),
+    this.loader = const Center(
+      child: CircularProgressIndicator.adaptive(),
+    ),
     this.loaderItemsCount = 6,
     this.scrollController,
     this.padding,
@@ -45,7 +47,16 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.scrollDirection = Axis.vertical,
   }) : super(key: key);
 
-  final Future<void> Function(bool) fetchPageData;
+  /// This is the controller function that should handle fetching the list
+  /// and updating in the state.
+  ///
+  /// The boolean in the callback is the reset flag. If that is true, that means
+  /// either the user wants to refresh the list with pull-down refresh, or no items
+  /// were found, and user clicked the refresh icon.
+  ///
+  /// If state is handled using [PaginationItemsStateHandler],
+  /// then the builder in it provides this argument and should be passed directly.
+  final Future<void> Function(bool reset) fetchPageData;
 
   /// Callback function which requires a widget that is rendered for each item.
   /// Provides context, index of the item in the list and the item itself.
@@ -60,7 +71,18 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// Scroll direction of the list/grid view
   final Axis scrollDirection;
 
+  /// Whether the extent of the scroll view in the [scrollDirection] should be
+  /// determined by the contents being viewed.
+  ///
+  /// If the scroll view does not shrink wrap, then the scroll view will expand
+  /// to the maximum allowed size in the [scrollDirection]. If the scroll view
+  /// has unbounded constraints in the [scrollDirection], then [shrinkWrap] must
+  /// be true.
+  ///
+  /// Defaults to false
   final bool shrinkWrap;
+
+  /// The amount of space by which to inset the children.
   final EdgeInsets? padding;
 
   /// Useful when the [PaginatedItemsBuilder] is a child of another scrollable,
@@ -127,6 +149,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   late ScrollController? itemsScrollController;
   late ScrollPhysics? scrollPhysics;
   late int itemCount;
+  late T? mockItem;
 
   Future<void> fetchData({bool reset = false}) async {
     if (!mounted) return;
@@ -166,8 +189,6 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   Widget _loaderBuilder() {
-    final mockItem = PaginatedItemsBuilder.config!.mockItemGetter<T>();
-
     Widget _buildLoader() => mockItem != null
         ? Shimmer.fromColors(
             highlightColor:
@@ -175,7 +196,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
             baseColor: PaginatedItemsBuilder.config!.shimmerConfig.baseColor,
             period: PaginatedItemsBuilder.config!.shimmerConfig.period,
             child: IgnorePointer(
-              child: widget.itemBuilder(context, 0, mockItem),
+              child: widget.itemBuilder(context, 0, mockItem!),
             ),
           )
         : widget.loader;
@@ -215,6 +236,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   @override
   void initState() {
     _scrollController = widget.scrollController ?? ScrollController();
+
+    mockItem = PaginatedItemsBuilder.config?.mockItemGetter<T>();
 
     if (widget.response?.items == null) fetchData();
     // if (widget.paginate) {
@@ -256,6 +279,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     if (widget.response?.items?.isEmpty ?? false) {
       return _emptyWidget(widget.emptyText);
+    } else if (widget.response?.items == null && mockItem == null) {
+      return _loaderBuilder();
     } else if (widget.shrinkWrap) {
       return _buildItems();
     } else {
