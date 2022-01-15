@@ -1,3 +1,10 @@
+## [0.0.5] - 15/01/2022
+
+* Made items in config constructors optional
+* Not showing multiple loaders when MockItem not found
+* Added remaining field docs
+* Added a better example app showing full functionality
+
 ## [0.0.4] - 10/01/2022
 
 * Fixed example app
