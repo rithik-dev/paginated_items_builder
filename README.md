@@ -1,4 +1,4 @@
-# PaginatedItemsBuilder For Flutter
+# [PaginatedItemsBuilder](https://pub.dev/packages/paginated_items_builder) For Flutter
 [![pub package](https://img.shields.io/pub/v/paginated_items_builder.svg)](https://pub.dev/packages/paginated_items_builder)
 [![likes](https://badges.bar/paginated_items_builder/likes)](https://pub.dev/packages/paginated_items_builder/score)
 [![popularity](https://badges.bar/paginated_items_builder/popularity)](https://pub.dev/packages/paginated_items_builder/popularity)

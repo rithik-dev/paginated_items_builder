@@ -1,3 +1,8 @@
+## [1.0.0] - 26/01/2022
+
+* Updated license
+* Updated README.md
+
 ## [0.0.5] - 15/01/2022
 
 * Made items in config constructors optional
