@@ -68,7 +68,7 @@ Future<void> updateProducts({
 The `apiFunction` can be defined as:
 
 ```dart
-Future<PaginatedResponse<Product>?> apiFunction({
+Future<PaginatedItemsResponse<Product>?> apiFunction({
   // can be string or int (page number) or any other type.
   String? startKey,
 }) async {
@@ -98,7 +98,7 @@ Now, can use this widget like shown in the widget tree:
 When the reset from fetchPageData fn is true, your code should handle the logic to update
 and replace the existing contents. Basically update all items. Much like a pull-down refresh.
 
-The same code is called when user pulls down to refresh on the view with [reset: true] to update all items. 
+The same code is called when user pulls down to refresh on the view with `reset: true` to update all items. 
 ```dart
 PaginatedItemsBuilder<Product>(
     fetchPageData: (reset) => controller.updateProducts(
@@ -108,6 +108,47 @@ PaginatedItemsBuilder<Product>(
     response: controller.productsResponse,
     itemBuilder: (context, index, item) => Text('Item$index : $item'),
 ),
+```
+
+## Customization
+
+To see the shimmer loader in play, you need to provide a mock items getter.. What basically happens
+is that this 'MockItem' is basically an object of the class `T` which is passed in
+the `PaginatedItemsBuilder` class.
+
+Generate a class like shown:
+```dart
+class MockItems {
+  static T? getByType<T>() {
+    switch (T.toString()) {
+      case 'Category':
+        return _category as T;
+    }
+  }
+
+  static final _category = Category.fromJson({
+    'id': 'id',
+    'name': '■■■■■■',
+  });
+}
+```
+
+and then pass the reference to the `getByType` function to the `PaginatedItemsBuilderConfig`.
+```dart
+PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
+    mockItemGetter: MockItems.getByType,
+);
+```
+
+In the `PaginatedItemsBuilderConfig`, you can also customize the shimmer loader colors etc.
+```dart
+PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
+    mockItemGetter: MockItems.getByType,
+    shimmerConfig: ShimmerConfig(
+        baseColor: Colors.grey[300],
+        highlightColor: Colors.grey[200],
+    ),
+);
 ```
 
 Want to show items as a grid? Change the cross axis count? Pass in a custom scroll controller?

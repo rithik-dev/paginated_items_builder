@@ -20,6 +20,7 @@ class PaginatedItemsResponse<T> {
   bool get hasMoreData => paginationKey != null;
 
   /// Find an object by [id].
+  // ignore: body_might_complete_normally_nullable
   T? findByUid(String id) {
     final idx = items?.indexWhere((e) => id == _idGetterFn!(e));
     if (idx != null && idx != -1) return items?[idx];

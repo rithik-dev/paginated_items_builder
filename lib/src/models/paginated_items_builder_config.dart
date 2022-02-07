@@ -12,14 +12,14 @@ class PaginatedItemsBuilderConfig {
       fontSize: 14,
     ),
   })  : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer(),
-        mockItemGetter = mockItemGetter ?? (<T>() {}),
+        mockItemGetter = mockItemGetter ?? (<T>() => null),
         noItemsTextGetter =
             noItemsTextGetter ?? ((name) => "No ${name}s found!");
 
   /// Default config
   PaginatedItemsBuilderConfig.defaultConfig() {
     shimmerConfig = ShimmerConfig.defaultShimmer();
-    mockItemGetter = <T>() {};
+    mockItemGetter = <T>() => null;
     noItemsTextGetter = (name) => "No ${name}s found!";
     noItemsTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
@@ -68,17 +68,20 @@ class ShimmerConfig {
   /// The shimmer's duration. Defaults to 175ms.
   late final Duration period;
 
+  static final _defaultBaseColor = Colors.grey[300]!;
+  static final _defaultHighlightColor = Colors.grey[200]!;
+
   ShimmerConfig({
     Color? baseColor,
     Color? highlightColor,
     this.period = const Duration(milliseconds: 175),
-  })  : baseColor = baseColor ?? Colors.grey[300]!,
-        highlightColor = highlightColor ?? Colors.grey[200]!;
+  })  : baseColor = baseColor ?? _defaultBaseColor,
+        highlightColor = highlightColor ?? _defaultHighlightColor;
 
   /// default
   ShimmerConfig.defaultShimmer() {
-    baseColor = Colors.grey[300]!;
-    highlightColor = Colors.grey[200]!;
+    baseColor = _defaultBaseColor;
+    highlightColor = _defaultHighlightColor;
     period = const Duration(milliseconds: 175);
   }
 }

@@ -281,7 +281,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       return _emptyWidget(widget.emptyText);
     } else if (widget.response?.items == null && mockItem == null) {
       return _loaderBuilder();
-    } else if (widget.shrinkWrap) {
+    } else if (widget.shrinkWrap || widget.scrollDirection == Axis.horizontal) {
       return _buildItems();
     } else {
       return RefreshIndicator(

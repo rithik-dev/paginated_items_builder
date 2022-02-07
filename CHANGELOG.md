@@ -1,3 +1,7 @@
+## [1.0.1] - 07/02/2022
+
+* Updated README.md
+
 ## [1.0.0] - 26/01/2022
 
 * Updated license
