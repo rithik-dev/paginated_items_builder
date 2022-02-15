@@ -79,7 +79,7 @@ class ShimmerConfig {
   ShimmerConfig({
     Color? baseColor,
     Color? highlightColor,
-    ShimmerDirection? direction = _defaultDirection,
+    this.direction = _defaultDirection,
     this.duration = _defaultDuration,
   })  : baseColor = baseColor ?? _defaultBaseColor,
         highlightColor = highlightColor ?? _defaultHighlightColor;

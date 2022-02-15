@@ -1,3 +1,8 @@
+## [1.0.4] - 15/02/2022
+
+* Fixed late initialize error for shimmer direction variable
+* Updated README.md
+
 ## [1.0.3] - 15/02/2022
 
 * Exposed shimmer direction property
