@@ -70,11 +70,12 @@ class ShimmerConfig {
 
   static final _defaultBaseColor = Colors.grey[300]!;
   static final _defaultHighlightColor = Colors.grey[200]!;
+  static const _defaultDuration = Duration(milliseconds: 800);
 
   ShimmerConfig({
     Color? baseColor,
     Color? highlightColor,
-    this.period = const Duration(milliseconds: 175),
+    this.period = _defaultDuration,
   })  : baseColor = baseColor ?? _defaultBaseColor,
         highlightColor = highlightColor ?? _defaultHighlightColor;
 
@@ -82,6 +83,6 @@ class ShimmerConfig {
   ShimmerConfig.defaultShimmer() {
     baseColor = _defaultBaseColor;
     highlightColor = _defaultHighlightColor;
-    period = const Duration(milliseconds: 175);
+    period = _defaultDuration;
   }
 }

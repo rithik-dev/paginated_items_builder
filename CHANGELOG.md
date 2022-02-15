@@ -1,3 +1,8 @@
+## [1.0.2] - 15/02/2022
+
+* Updated default shimmer duration
+* Updated README.md
+
 ## [1.0.1] - 07/02/2022
 
 * Updated README.md

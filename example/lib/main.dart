@@ -33,9 +33,35 @@ class _MainAppState extends State<_MainApp> {
           create: (_) => PostsController(),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         title: 'PaginatedItemsBuilder Demo',
-        home: HomeScreen(),
+        builder: (context, child) {
+          late final Color shimmerBaseColor;
+          late final Color shimmerHighlightColor;
+
+          switch (Theme.of(context).brightness) {
+            case Brightness.light:
+              shimmerBaseColor = Colors.grey[300]!;
+              shimmerHighlightColor = Colors.grey[100]!;
+              break;
+            case Brightness.dark:
+              shimmerBaseColor = const Color(0xFF031956);
+              shimmerHighlightColor = const Color(0x80031956);
+              break;
+          }
+
+          PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
+            mockItemGetter: MockItems.getByType,
+            shimmerConfig: ShimmerConfig(
+              baseColor: shimmerBaseColor,
+              highlightColor: shimmerHighlightColor,
+              period: const Duration(seconds: 1),
+            ),
+          );
+
+          return child!;
+        },
+        home: const HomeScreen(),
       ),
     );
   }
