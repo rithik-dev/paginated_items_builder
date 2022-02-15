@@ -154,32 +154,35 @@ PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
 The config can be initialized in the MaterialApp's builder property. It is also possible to
 pass different colors for different themes as shown:
 ```dart
-builder: (context, child) {
-    late final Color shimmerBaseColor;
-    late final Color shimmerHighlightColor;
-    
-    switch (Theme.of(context).brightness) {
-      case Brightness.light:
-        shimmerBaseColor = Colors.grey[300]!;
-        shimmerHighlightColor = Colors.grey[100]!;
-        break;
-      case Brightness.dark:
-        shimmerBaseColor = const Color(0xFF031956);
-        shimmerHighlightColor = const Color(0x80031956);
-        break;
-    }
-    
-    PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
-      mockItemGetter: MockItems.getByType,
-      shimmerConfig: ShimmerConfig(
-        baseColor: shimmerBaseColor,
-        highlightColor: shimmerHighlightColor,
-        period: const Duration(seconds: 1),
-      ),
-    );
-    
-    return child!;
-},
+MaterialApp(
+    title: 'PaginatedItemsBuilder Demo',
+    builder: (context, child) {
+        late final Color shimmerBaseColor;
+        late final Color shimmerHighlightColor;
+        
+        switch (Theme.of(context).brightness) {
+            case Brightness.light:
+                shimmerBaseColor = Colors.grey[300]!;
+                shimmerHighlightColor = Colors.grey[100]!;
+                break;
+            case Brightness.dark:
+                shimmerBaseColor = const Color(0xFF031956);
+                shimmerHighlightColor = const Color(0x80031956);
+                break;
+        }
+        
+        PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
+            mockItemGetter: MockItems.getByType,
+            shimmerConfig: ShimmerConfig(
+                baseColor: shimmerBaseColor,
+                highlightColor: shimmerHighlightColor,
+                duration: const Duration(seconds: 1),
+            ),
+        );
+        
+        return child!;
+    },
+);
 ```
 
 Want to show items as a grid? Change the cross axis count? Pass in a custom scroll controller?

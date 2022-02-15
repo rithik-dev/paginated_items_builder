@@ -65,17 +65,22 @@ class ShimmerConfig {
   /// The shimmer's highlight color. Defaults to Colors.grey[200].
   late final Color highlightColor;
 
-  /// The shimmer's duration. Defaults to 175ms.
-  late final Duration period;
+  /// The shimmer's duration. Defaults to 800ms.
+  late final Duration duration;
+
+  /// The shimmer's direction. Defaults to [ShimmerDirection.ltr].
+  late final ShimmerDirection direction;
 
   static final _defaultBaseColor = Colors.grey[300]!;
   static final _defaultHighlightColor = Colors.grey[200]!;
+  static const _defaultDirection = ShimmerDirection.ltr;
   static const _defaultDuration = Duration(milliseconds: 800);
 
   ShimmerConfig({
     Color? baseColor,
     Color? highlightColor,
-    this.period = _defaultDuration,
+    ShimmerDirection? direction = _defaultDirection,
+    this.duration = _defaultDuration,
   })  : baseColor = baseColor ?? _defaultBaseColor,
         highlightColor = highlightColor ?? _defaultHighlightColor;
 
@@ -83,6 +88,7 @@ class ShimmerConfig {
   ShimmerConfig.defaultShimmer() {
     baseColor = _defaultBaseColor;
     highlightColor = _defaultHighlightColor;
-    period = _defaultDuration;
+    direction = _defaultDirection;
+    duration = _defaultDuration;
   }
 }

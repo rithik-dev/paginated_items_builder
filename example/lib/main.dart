@@ -55,7 +55,7 @@ class _MainAppState extends State<_MainApp> {
             shimmerConfig: ShimmerConfig(
               baseColor: shimmerBaseColor,
               highlightColor: shimmerHighlightColor,
-              period: const Duration(seconds: 1),
+              duration: const Duration(seconds: 1),
             ),
           );
 

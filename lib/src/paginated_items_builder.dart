@@ -189,12 +189,14 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   Widget _loaderBuilder() {
+    final shimmerConfig = PaginatedItemsBuilder.config!.shimmerConfig;
+
     Widget _buildLoader() => mockItem != null
         ? Shimmer.fromColors(
-            highlightColor:
-                PaginatedItemsBuilder.config!.shimmerConfig.highlightColor,
-            baseColor: PaginatedItemsBuilder.config!.shimmerConfig.baseColor,
-            period: PaginatedItemsBuilder.config!.shimmerConfig.period,
+            highlightColor: shimmerConfig.highlightColor,
+            baseColor: shimmerConfig.baseColor,
+            period: shimmerConfig.duration,
+            direction: shimmerConfig.direction,
             child: IgnorePointer(
               child: widget.itemBuilder(context, 0, mockItem!),
             ),

@@ -1,3 +1,9 @@
+## [1.0.3] - 15/02/2022
+
+* Exposed shimmer direction property
+* Updated docs
+* Updated README.md
+
 ## [1.0.2] - 15/02/2022
 
 * Updated default shimmer duration
