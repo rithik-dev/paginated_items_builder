@@ -3,7 +3,9 @@
 * Added access/update to list elements by using [] syntax on PaginatedItemsResponse directly.
 * Added custom refresh icon builder parameter
 * Added mockItemKey param for getting mock item with this key, if T is not used.
+* Added disable refresh indicator param
 * Fixed scroll controller assignment
+* Fixed triggering fetchData multiple times by custom implementation. Removed VisibilityDetector as dependency.
 * Fixed a bug where fetchData was called twice if PaginationItemsStateHandler was used as parent
 * Updated example app
 * Updated README.md

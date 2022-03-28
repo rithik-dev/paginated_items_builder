@@ -5,7 +5,6 @@ import 'package:paginated_items_builder/src/models/paginated_items_builder_confi
 import 'package:paginated_items_builder/src/models/paginated_items_response.dart';
 import 'package:paginated_items_builder/src/pagination_items_state_handler.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 /// enum used to check how the list items are to be rendered on the screen.
 /// Whether in a list view or a grid view.
@@ -27,6 +26,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     required this.itemBuilder,
     this.itemsDisplayType = ItemsDisplayType.list,
     this.shrinkWrap = false,
+    this.disableRefreshIndicator = false,
     this.paginate = true,
     this.showRefreshIcon = true,
     this.neverScrollablePhysicsOnShrinkWrap = true,
@@ -83,6 +83,11 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// Defaults to false
   final bool shrinkWrap;
+
+  /// True if you don't want the in-built refresh indicator for your items.
+  ///
+  /// Defaults to false.
+  final bool disableRefreshIndicator;
 
   /// The amount of space by which to inset the children.
   final EdgeInsets? padding;
@@ -155,7 +160,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   bool _initialLoading = true;
   bool _loadingMoreData = false;
 
-  final _loaderKey = UniqueKey();
+  int? _lastLoaderBuiltIndex;
 
   late bool showLoader;
   late ScrollPhysics? scrollPhysics;
@@ -191,15 +196,18 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   Widget _itemBuilder(context, index) {
     if (widget.response?.items != null) {
-      if (widget.response!.items!.length <= index) return _loaderBuilder();
+      // bottom loader
+      // passing index only for bottom loader, to update [_lastLoaderBuiltIndex]
+      if (widget.response!.items!.length <= index) return _loaderBuilder(index);
       final item = widget.response!.items![index];
       return widget.itemBuilder(context, index, item);
     } else {
+      // initial loader
       return _loaderBuilder();
     }
   }
 
-  Widget _loaderBuilder() {
+  Widget _loaderBuilder([int? index]) {
     final shimmerConfig = PaginatedItemsBuilder.config!.shimmerConfig;
 
     Widget _buildLoader() => mockItem != null
@@ -214,13 +222,16 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
           )
         : widget.loader;
 
-    return widget.paginate
-        ? VisibilityDetector(
-            key: _loaderKey,
-            onVisibilityChanged: (_) => _fetchData(),
-            child: _buildLoader(),
-          )
-        : _buildLoader();
+    if (widget.paginate && index != null) {
+      if (_lastLoaderBuiltIndex != index) {
+        WidgetsBinding.instance?.addPostFrameCallback(
+          (_) => _fetchData(),
+        );
+        _lastLoaderBuiltIndex = index;
+      }
+    }
+
+    return _buildLoader();
   }
 
   Widget _emptyWidget([String? text]) {
@@ -297,7 +308,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       return _emptyWidget(widget.emptyText);
     } else if (widget.response?.items == null && mockItem == null) {
       return _loaderBuilder();
-    } else if (widget.shrinkWrap || widget.scrollDirection == Axis.horizontal) {
+    } else if (widget.disableRefreshIndicator ||
+        widget.shrinkWrap ||
+        widget.scrollDirection == Axis.horizontal) {
       return _buildItems();
     } else {
       return RefreshIndicator(

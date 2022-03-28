@@ -1,6 +1,6 @@
 library paginated_items_builder;
 
-export 'package:shimmer/shimmer.dart' show ShimmerDirection;
+export 'package:shimmer/shimmer.dart';
 
 export 'src/models/paginated_items_builder_config.dart';
 export 'src/models/paginated_items_response.dart';
