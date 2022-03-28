@@ -4,7 +4,6 @@
 * Added custom refresh icon builder parameter
 * Added mockItemKey param for getting mock item with this key, if T is not used.
 * Fixed scroll controller assignment
-* Fixed triggering fetchData multiple times from VisibilityDetector
 * Fixed a bug where fetchData was called twice if PaginationItemsStateHandler was used as parent
 * Updated example app
 * Updated README.md

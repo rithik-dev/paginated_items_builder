@@ -228,7 +228,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       () => _fetchData(reset: true),
     );
 
-    final itemName = T.toString();
+    final itemName = widget.mockItemKey ?? T.toString();
 
     return Center(
       child: Row(
