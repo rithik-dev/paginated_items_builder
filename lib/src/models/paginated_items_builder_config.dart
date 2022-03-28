@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 
+dynamic _getByType<T>([String? key]) => null;
+
 /// The config for [PaginatedItemsBuilder].
 class PaginatedItemsBuilderConfig {
   PaginatedItemsBuilderConfig({
     ShimmerConfig? shimmerConfig,
-    T? Function<T>()? mockItemGetter,
+    dynamic Function<T>([String? key])? mockItemGetter,
     String Function(String name)? noItemsTextGetter,
     this.noItemsTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 14,
     ),
   })  : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer(),
-        mockItemGetter = mockItemGetter ?? (<T>() => null),
+        mockItemGetter = mockItemGetter ?? _getByType,
         noItemsTextGetter =
             noItemsTextGetter ?? ((name) => "No ${name}s found!");
 
   /// Default config
   PaginatedItemsBuilderConfig.defaultConfig() {
     shimmerConfig = ShimmerConfig.defaultShimmer();
-    mockItemGetter = <T>() => null;
+    mockItemGetter = _getByType;
     noItemsTextGetter = (name) => "No ${name}s found!";
     noItemsTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
@@ -43,7 +45,7 @@ class PaginatedItemsBuilderConfig {
   ///
   ///   static final _product = Product();
   /// }
-  late final T? Function<T>() mockItemGetter;
+  late final dynamic Function<T>([String? key]) mockItemGetter;
 
   /// Provide a [ShimmerConfig] to customize the shimmer loading animation
   /// color, or the duration.

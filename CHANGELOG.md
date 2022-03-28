@@ -1,3 +1,14 @@
+## [1.0.5] - 29/03/2022
+
+* Added access/update to list elements by using [] syntax on PaginatedItemsResponse directly.
+* Added custom refresh icon builder parameter
+* Added mockItemKey param for getting mock item with this key, if T is not used.
+* Fixed scroll controller assignment
+* Fixed triggering fetchData multiple times from VisibilityDetector
+* Fixed a bug where fetchData was called twice if PaginationItemsStateHandler was used as parent
+* Updated example app
+* Updated README.md
+
 ## [1.0.4] - 15/02/2022
 
 * Fixed late initialize error for shimmer direction variable

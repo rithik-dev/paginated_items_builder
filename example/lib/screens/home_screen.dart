@@ -66,7 +66,8 @@ class PostsListWithoutController extends StatelessWidget {
 
   /// function which calls the API and returns obj
   Future<PaginatedItemsResponse<Post>?> updateProducts(
-      String? paginationKey) async {
+    dynamic paginationKey,
+  ) async {
     return await PostsRepository.getPosts(startKey: paginationKey);
   }
 
@@ -76,7 +77,7 @@ class PostsListWithoutController extends StatelessWidget {
       child: Scaffold(
         body: PaginationItemsStateHandler<Post>(
           pageFetchData: updateProducts,
-          itemsBuilder: (response, fetchPageData) {
+          builder: (response, fetchPageData) {
             return PaginatedItemsBuilder<Post>(
               response: response,
               fetchPageData: fetchPageData,

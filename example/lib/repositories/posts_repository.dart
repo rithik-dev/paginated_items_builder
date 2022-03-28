@@ -6,7 +6,7 @@ class PostsRepository {
   const PostsRepository._();
 
   static Future<PaginatedItemsResponse<Post>?> getPosts({
-    String? startKey,
+    dynamic startKey,
   }) async {
     // use dio or http to call api and get the response. and pass the contents
     // in the constructor for [PaginatedItemsResponse].

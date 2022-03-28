@@ -70,7 +70,7 @@ The `apiFunction` can be defined as:
 ```dart
 Future<PaginatedItemsResponse<Product>?> apiFunction({
   // can be string or int (page number) or any other type.
-  String? startKey,
+  dynamic startKey,
 }) async {
   // startKey necessary if pagination support
   final res = await _api.getProducts(startKey: startKey);
@@ -119,8 +119,9 @@ the `PaginatedItemsBuilder` class.
 Generate a class like shown:
 ```dart
 class MockItems {
-  static T? getByType<T>() {
-    switch (T.toString()) {
+  static dynamic getByType<T>([String? key]) {
+    final typeKey = key ?? T.toString();
+    switch (typeKey) {
       case 'Category':
         return _category as T;
     }

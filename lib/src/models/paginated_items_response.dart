@@ -26,6 +26,10 @@ class PaginatedItemsResponse<T> {
     if (idx != null && idx != -1) return items?[idx];
   }
 
+  T? operator [](int index) => items?[index];
+
+  void operator []=(int index, T value) => items?[index] = value;
+
   /// constructor
   PaginatedItemsResponse({
     String Function(T)? idGetter,

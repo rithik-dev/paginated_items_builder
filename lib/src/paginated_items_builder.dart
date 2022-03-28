@@ -38,6 +38,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.padding,
     this.emptyText,
     this.maxLength,
+    this.refreshIconBuilder,
     this.separatorWidget,
     this.listItemsGap,
     this.gridCrossAxisCount,
@@ -45,6 +46,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.gridCrossAxisSpacing,
     this.gridChildAspectRatio,
     this.scrollDirection = Axis.vertical,
+    this.mockItemKey,
   }) : super(key: key);
 
   /// This is the controller function that should handle fetching the list
@@ -85,12 +87,24 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// The amount of space by which to inset the children.
   final EdgeInsets? padding;
 
+  /// Can be used to override [mockItemsGetter] property.
+  /// If [mockItemKey] is provided, then the <T> param in mockItemsGetter is ignored
+  /// to get the mock item.
+  ///
+  /// Should be preferably used if [T] is generic like [String].
+  final String? mockItemKey;
+
   /// Useful when the [PaginatedItemsBuilder] is a child of another scrollable,
   /// then the physics should be [NeverScrollableScrollPhysics] as it conflicts.
   /// Hence, if true, it overrides the [shrinkWrap] property as [shrinkWrap]
   /// should be true if the [PaginatedItemsBuilder] is inside another scrollable
   /// widget.
   final bool neverScrollablePhysicsOnShrinkWrap;
+
+  /// The refresh icon builder. [showRefreshIcon] is ignored if [refreshIconBuilder] is not null;
+  /// The parameter provides a function which should be passed to your custom widget's
+  /// gesture handler to trigger refreshing the items.
+  final Widget Function(void Function() onTap)? refreshIconBuilder;
 
   /// The text to show if no items are present.
   final String? emptyText;
@@ -138,20 +152,17 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
 }
 
 class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
-  late final ScrollController _scrollController;
-
   bool _initialLoading = true;
   bool _loadingMoreData = false;
 
   final _loaderKey = UniqueKey();
 
   late bool showLoader;
-  late ScrollController? itemsScrollController;
   late ScrollPhysics? scrollPhysics;
   late int itemCount;
   late T? mockItem;
 
-  Future<void> fetchData({bool reset = false}) async {
+  Future<void> _fetchData({bool reset = false}) async {
     if (!mounted) return;
     if (!reset &&
         (widget.response != null &&
@@ -206,14 +217,19 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     return widget.paginate
         ? VisibilityDetector(
             key: _loaderKey,
-            onVisibilityChanged: (_) => fetchData(),
+            onVisibilityChanged: (_) => _fetchData(),
             child: _buildLoader(),
           )
         : _buildLoader();
   }
 
   Widget _emptyWidget([String? text]) {
-    final itemName = T.toString().toLowerCase().replaceAll('lean', '');
+    final customRefreshIcon = widget.refreshIconBuilder?.call(
+      () => _fetchData(reset: true),
+    );
+
+    final itemName = T.toString();
+
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -222,13 +238,15 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
             text ?? PaginatedItemsBuilder.config!.noItemsTextGetter(itemName),
             style: PaginatedItemsBuilder.config!.noItemsTextStyle,
           ),
-          if (widget.showRefreshIcon)
+          if (customRefreshIcon != null)
+            customRefreshIcon
+          else if (widget.showRefreshIcon)
             IconButton(
               icon: Icon(
                 Icons.refresh,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              onPressed: () => fetchData(reset: true),
+              onPressed: () => _fetchData(reset: true),
             ),
         ],
       ),
@@ -237,17 +255,21 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   @override
   void initState() {
-    _scrollController = widget.scrollController ?? ScrollController();
+    final _config = PaginatedItemsBuilder.config;
 
-    mockItem = PaginatedItemsBuilder.config?.mockItemGetter<T>();
+    mockItem = widget.mockItemKey == null
+        ? _config?.mockItemGetter<T>()
+        : _config?.mockItemGetter(widget.mockItemKey);
 
-    if (widget.response?.items == null) fetchData();
-    // if (widget.paginate) {
-    // _scrollController.addListener(() {
-    //   final pos = _scrollController.position;
-    //   if (pos.maxScrollExtent == pos.pixels) fetchData();
-    // });
-    // }
+    late bool hasItemsStateHandlerAsParent;
+    context.visitAncestorElements((element) {
+      hasItemsStateHandlerAsParent =
+          element.toStringShort().contains('PaginationItemsStateHandler');
+
+      // stop visiting any more ancestors if already found i.e. return false.
+      return !hasItemsStateHandlerAsParent;
+    });
+    if (!hasItemsStateHandlerAsParent) _fetchData();
 
     PaginatedItemsBuilder.config ??=
         PaginatedItemsBuilderConfig.defaultConfig();
@@ -256,16 +278,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   @override
-  void dispose() {
-    if (widget.scrollController == null) _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     showLoader = (widget.paginate && (widget.response?.hasMoreData ?? false));
-    itemsScrollController =
-        widget.scrollController == null ? _scrollController : null;
     scrollPhysics =
         (widget.shrinkWrap && widget.neverScrollablePhysicsOnShrinkWrap)
             ? const NeverScrollableScrollPhysics()
@@ -287,8 +301,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       return _buildItems();
     } else {
       return RefreshIndicator(
-        displacement: 10,
-        onRefresh: () async => await fetchData(reset: true),
+        onRefresh: () async => await _fetchData(reset: true),
         child: _buildItems(),
       );
     }
@@ -302,7 +315,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     return ListView.separated(
       shrinkWrap: widget.shrinkWrap,
       physics: scrollPhysics,
-      controller: itemsScrollController,
+      controller: widget.scrollController,
       scrollDirection: widget.scrollDirection,
       itemBuilder: _itemBuilder,
       padding: widget.padding,
@@ -320,7 +333,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     return GridView.builder(
       shrinkWrap: widget.shrinkWrap,
       physics: scrollPhysics,
-      controller: itemsScrollController,
+      controller: widget.scrollController,
       scrollDirection: widget.scrollDirection,
       itemBuilder: _itemBuilder,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

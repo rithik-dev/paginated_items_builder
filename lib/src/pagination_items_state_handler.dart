@@ -5,10 +5,10 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 /// one time use, use [PaginationItemsStateHandler], it handles the state internally and
 /// wraps above a [PaginatedItemsBuilder].
 ///
-/// The [itemsBuilder] provides the required arguments needed by the [PaginatedItemsBuilder].
+/// The [builder] provides the required arguments needed by the [PaginatedItemsBuilder].
 class PaginationItemsStateHandler<T> extends StatefulWidget {
   /// Pass in a function that calls the API and returns a [PaginatedItemsResponse].
-  final Future<PaginatedItemsResponse<T>?> Function(String? paginationKey)
+  final Future<PaginatedItemsResponse<T>?> Function(dynamic paginationKey)
       pageFetchData;
 
   /// Callback method that usually should return a [PaginatedItemsBuilder] and
@@ -16,12 +16,12 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
   final Widget Function(
     PaginatedItemsResponse<T>? response,
     Future<void> Function(bool) fetchPageData,
-  ) itemsBuilder;
+  ) builder;
 
   const PaginationItemsStateHandler({
     Key? key,
     required this.pageFetchData,
-    required this.itemsBuilder,
+    required this.builder,
   }) : super(key: key);
 
   @override
@@ -61,6 +61,6 @@ class _PaginationItemsStateHandlerState<T>
 
   @override
   Widget build(BuildContext context) {
-    return widget.itemsBuilder(itemsResponse, _update);
+    return widget.builder(itemsResponse, _update);
   }
 }
