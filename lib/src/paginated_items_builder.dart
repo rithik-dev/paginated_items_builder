@@ -272,15 +272,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         ? _config?.mockItemGetter<T>()
         : _config?.mockItemGetter(widget.mockItemKey);
 
-    late bool hasItemsStateHandlerAsParent;
-    context.visitAncestorElements((element) {
-      hasItemsStateHandlerAsParent =
-          element.toStringShort().contains('PaginationItemsStateHandler');
-
-      // stop visiting any more ancestors if already found i.e. return false.
-      return !hasItemsStateHandlerAsParent;
-    });
-    if (!hasItemsStateHandlerAsParent) _fetchData();
+    final itemsStateHandlerAsParent =
+        context.findAncestorWidgetOfExactType<PaginationItemsStateHandler<T>>();
+    if (itemsStateHandlerAsParent == null) _fetchData();
 
     PaginatedItemsBuilder.config ??=
         PaginatedItemsBuilderConfig.defaultConfig();

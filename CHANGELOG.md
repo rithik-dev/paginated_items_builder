@@ -1,3 +1,8 @@
+## [1.0.6] - 29/03/2022
+
+* Fixed a bug where fetchData was called twice if PaginationItemsStateHandler was used as parent in release mode (optimization).
+* Updated example app
+
 ## [1.0.5] - 29/03/2022
 
 * Added access/update to list elements by using [] syntax on PaginatedItemsResponse directly.

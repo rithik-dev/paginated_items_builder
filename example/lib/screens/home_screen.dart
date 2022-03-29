@@ -14,8 +14,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const PostsListWithController();
-    // return const PostsListWithoutController();
+    return const PostsListWithStateHandledExternally();
+    // return const PostsListWithStateHandledInternally();
   }
 }
 
@@ -23,8 +23,8 @@ class HomeScreen extends StatelessWidget {
 // WITH CONTROLLER
 //******************************************************************
 
-class PostsListWithController extends StatelessWidget {
-  const PostsListWithController({
+class PostsListWithStateHandledExternally extends StatelessWidget {
+  const PostsListWithStateHandledExternally({
     Key? key,
   }) : super(key: key);
 
@@ -59,8 +59,8 @@ class PostsListWithController extends StatelessWidget {
 // WITHOUT CONTROLLER
 //******************************************************************
 
-class PostsListWithoutController extends StatelessWidget {
-  const PostsListWithoutController({
+class PostsListWithStateHandledInternally extends StatelessWidget {
+  const PostsListWithStateHandledInternally({
     Key? key,
   }) : super(key: key);
 
