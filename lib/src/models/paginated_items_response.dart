@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 /// The response object that carries the list of items and handles pagination
 /// internally. The [paginationKey] is optional and can be of any type. If not passed,
 /// it is assumed that the API does not support pagination.
@@ -18,6 +20,15 @@ class PaginatedItemsResponse<T> {
 
   /// If pagination supported, check if there is more data that can be loaded.
   bool get hasMoreData => paginationKey != null;
+
+  /// True if [items] is not null.
+  bool get hasData => items != null;
+
+  /// True if the list is either empty or null.
+  bool get isEmpty => items?.isEmpty ?? true;
+
+  /// True if the list is neither empty nor null.
+  bool get isNotEmpty => !isEmpty;
 
   /// Find an object by [id].
   // ignore: body_might_complete_normally_nullable
@@ -72,6 +83,23 @@ class PaginatedItemsResponse<T> {
       }
     }
     paginationKey = key;
+  }
+
+  /// Logs the response.
+  void log() => dev.log('\n${toString()}', name: 'PaginatedItemsResponse<$T>');
+
+  @override
+  String toString() {
+    final itemsArrString = items
+        ?.map((item) => item.toString())
+        .map((itemName) => '\t\t$itemName,')
+        .join('\n');
+
+    return """
+PaginatedItemsResponse<$T>({
+  items: ${items == null ? 'null' : '[\n$itemsArrString\n\t],'}
+  paginationKey: $paginationKey,
+});""";
   }
 
   /// Clear the contents.
