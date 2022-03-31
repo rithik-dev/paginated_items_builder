@@ -1,11 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:paginated_items_builder/src/items_fetch_scope.dart';
-import 'package:paginated_items_builder/src/models/paginated_items_builder_config.dart';
-import 'package:paginated_items_builder/src/models/paginated_items_response.dart';
-import 'package:paginated_items_builder/src/pagination_items_state_handler.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:paginated_items_builder/paginated_items_builder.dart';
 
 /// enum used to check how the list items are to be rendered on the screen.
 /// Whether in a list view or a grid view.
@@ -221,19 +217,18 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   Widget _loaderBuilder([int? index]) {
-    final shimmerConfig = PaginatedItemsBuilder.config!.shimmerConfig;
+    Widget _buildMockItemLoader() {
+      final builtMockItem = widget.itemBuilder(context, 0, mockItem!);
 
-    Widget _buildLoader() => mockItem != null
-        ? Shimmer.fromColors(
-            highlightColor: shimmerConfig.highlightColor,
-            baseColor: shimmerConfig.baseColor,
-            period: shimmerConfig.duration,
-            direction: shimmerConfig.direction,
-            child: IgnorePointer(
-              child: widget.itemBuilder(context, 0, mockItem!),
-            ),
-          )
-        : widget.loader;
+      if (index == null) {
+        // if index is null, means this loader is being used for initial loading
+        // screen. So, not rendering shimmer as their is main shimmer for that.
+        return builtMockItem;
+      } else {
+        // bottom loader
+        return LoaderShimmer(child: builtMockItem);
+      }
+    }
 
     if (widget.paginate && index != null) {
       if (_lastLoaderBuiltIndex != index) {
@@ -244,7 +239,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       }
     }
 
-    return _buildLoader();
+    return mockItem == null ? widget.loader : _buildMockItemLoader();
   }
 
   Widget _emptyWidget([String? text]) {
@@ -293,7 +288,6 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     final itemsStateHandlerAsParent =
         context.findAncestorWidgetOfExactType<PaginationItemsStateHandler<T>>();
-    // FIXME: what if there is another parent widget, not for this one....
     if (itemsStateHandlerAsParent == null) {
       _fetchData(itemsFetchScope: ItemsFetchScope.initialLoad);
     }
@@ -339,9 +333,17 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     }
   }
 
-  Widget _buildItems() => widget.itemsDisplayType == ItemsDisplayType.list
-      ? _buildListView()
-      : _buildGridView();
+  Widget _buildItems() {
+    final itemsView = widget.itemsDisplayType == ItemsDisplayType.list
+        ? _buildListView()
+        : _buildGridView();
+
+    if (widget.response?.items == null && mockItem != null) {
+      return LoaderShimmer(child: itemsView);
+    } else {
+      return itemsView;
+    }
+  }
 
   ListView _buildListView() {
     return ListView.separated(

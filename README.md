@@ -92,6 +92,18 @@ Future<PaginatedItemsResponse<Product>?> apiFunction({
 }
 ```
 
+You can also log the result directly by using the `log()` function on the `PaginatedItemsResponse`
+directly...
+```dart
+final response = PaginatedItemsResponse<Product>(
+    listItems: res.data?.products,
+    paginationKey: res.data?.paginationKey,
+    idGetter: (product) => product.id,
+);
+
+response.log();
+```
+
 Now, can use this widget like shown in the widget tree:
 (No need to handle a refresh indicator separately. It is already present.)
 
@@ -144,7 +156,35 @@ PaginationItemsStateHandler<Post>(
 ),
 ```
 
-## Customization
+Want to use the shimmer loader somewhere else?
+
+What if you have multiple `PaginatedItemsBuilder` widgets in a single view,
+then every builder has it's own loader, and you want a pull down refresh
+handler on the main page, and at the same time don't want every widget
+to render it's own loader, instead, have a common global loader for the entire page.
+
+Then you can use `LoaderShimmer`, which is basically shimmer with the
+`ShimmerConfig` properties as defaults, that can also be changed(if required)...
+```dart
+LoaderShimmer(
+
+    baseColor: Colors.grey, // defaults to `ShimmerConfig.baseColor`
+
+    // ... and more properties
+
+    child: ListView(
+        children: [
+            // disable individual loaders for these builders by passing false 
+            // in the showLoaderOnReset flag in the updateX methods..
+            PaginatedItemsBuilder1(),
+            PaginatedItemsBuilder2(),
+            PaginatedItemsBuilder3(),
+        ],
+    ),
+);
+```
+
+## PaginatedItemsBuilder Config
 
 To see the shimmer loader in play, you need to provide a mock items getter.. What basically happens
 is that this 'MockItem' is basically an object of the class `T` which is passed in
