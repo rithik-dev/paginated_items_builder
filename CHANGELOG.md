@@ -1,3 +1,12 @@
+## [1.0.7] - 31/03/2022
+
+* Added some helper getters/functions in PaginatedItemsResponse. 
+* Added ItemsFetchScope i.e. defines the scope from which fetchPageData in PaginatedItemsBuilder was called.
+* Exposed LoaderShimmer as a widget to wrap around your own widgets.
+* Updated noItemsTextGetter definition
+* Updated example app
+* Updated README.md
+
 ## [1.0.6] - 29/03/2022
 
 * Fixed a bug where fetchData was called twice if PaginationItemsStateHandler was used as parent in release mode (optimization).
