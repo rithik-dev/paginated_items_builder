@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:paginated_items_builder/src/items_fetch_scope.dart';
 import 'package:paginated_items_builder/src/models/paginated_items_builder_config.dart';
 import 'package:paginated_items_builder/src/models/paginated_items_response.dart';
 import 'package:paginated_items_builder/src/pagination_items_state_handler.dart';
@@ -52,17 +53,26 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// This is the controller function that should handle fetching the list
   /// and updating in the state.
   ///
-  /// The boolean in the callback is the reset flag. If that is true, that means
-  /// either the user wants to refresh the list with pull-down refresh, or no items
-  /// were found, and user clicked the refresh icon.
+  /// It provides 2 callback values, first one being the [reset] flag(boolean).
+  /// If that is true, that means an action was triggered which requires to
+  /// force reload the items of the list.
+  ///
+  /// The 2nd value is the [ItemsFetchScope], which defines the action calling the
+  /// fetch data function.
+  ///
+  /// The [reset] flag will be true only when the [itemsFetchScope] is either
+  /// [ItemsFetchScope.noItemsRefresh] i.e. no items were found, and user
+  /// clicked the refresh icon OR [ItemsFetchScope.pullDownToRefresh] i.e.
+  /// the user wants to refresh the list contents with pull-down action.
   ///
   /// If state is handled using [PaginationItemsStateHandler],
   /// then the builder in it provides this argument and should be passed directly.
-  final Future<void> Function(bool reset) fetchPageData;
+  final Future<void> Function(bool reset, ItemsFetchScope itemsFetchScope)
+      fetchPageData;
 
   /// Callback function which requires a widget that is rendered for each item.
   /// Provides context, index of the item in the list and the item itself.
-  final Widget Function(BuildContext, int, T) itemBuilder;
+  final Widget Function(BuildContext context, int index, T item) itemBuilder;
 
   /// The response object whose contents are displayed.
   final PaginatedItemsResponse<T>? response;
@@ -167,7 +177,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   late int itemCount;
   late T? mockItem;
 
-  Future<void> _fetchData({bool reset = false}) async {
+  Future<void> _fetchData({
+    bool reset = false,
+    required ItemsFetchScope itemsFetchScope,
+  }) async {
     if (!mounted) return;
     if (!reset &&
         (widget.response != null &&
@@ -184,7 +197,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     });
 
     try {
-      await widget.fetchPageData(reset);
+      await widget.fetchPageData(reset, itemsFetchScope);
     } catch (_) {}
 
     if (_initialLoading) _initialLoading = false;
@@ -225,7 +238,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     if (widget.paginate && index != null) {
       if (_lastLoaderBuiltIndex != index) {
         WidgetsBinding.instance?.addPostFrameCallback(
-          (_) => _fetchData(),
+          (_) => _fetchData(itemsFetchScope: ItemsFetchScope.loadMoreData),
         );
         _lastLoaderBuiltIndex = index;
       }
@@ -236,7 +249,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   Widget _emptyWidget([String? text]) {
     final customRefreshIcon = widget.refreshIconBuilder?.call(
-      () => _fetchData(reset: true),
+      () => _fetchData(
+        reset: true,
+        itemsFetchScope: ItemsFetchScope.noItemsRefresh,
+      ),
     );
 
     final itemName = widget.mockItemKey ?? T.toString();
@@ -257,7 +273,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
                 Icons.refresh,
                 color: Theme.of(context).colorScheme.secondary,
               ),
-              onPressed: () => _fetchData(reset: true),
+              onPressed: () => _fetchData(
+                reset: true,
+                itemsFetchScope: ItemsFetchScope.noItemsRefresh,
+              ),
             ),
         ],
       ),
@@ -274,7 +293,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     final itemsStateHandlerAsParent =
         context.findAncestorWidgetOfExactType<PaginationItemsStateHandler<T>>();
-    if (itemsStateHandlerAsParent == null) _fetchData();
+    // FIXME: what if there is another parent widget, not for this one....
+    if (itemsStateHandlerAsParent == null) {
+      _fetchData(itemsFetchScope: ItemsFetchScope.initialLoad);
+    }
 
     PaginatedItemsBuilder.config ??=
         PaginatedItemsBuilderConfig.defaultConfig();
@@ -308,7 +330,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       return _buildItems();
     } else {
       return RefreshIndicator(
-        onRefresh: () async => await _fetchData(reset: true),
+        onRefresh: () async => await _fetchData(
+          reset: true,
+          itemsFetchScope: ItemsFetchScope.pullDownToRefresh,
+        ),
         child: _buildItems(),
       );
     }

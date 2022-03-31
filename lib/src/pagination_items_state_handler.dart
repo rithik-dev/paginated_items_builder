@@ -9,18 +9,22 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 class PaginationItemsStateHandler<T> extends StatefulWidget {
   /// Pass in a function that calls the API and returns a [PaginatedItemsResponse].
   final Future<PaginatedItemsResponse<T>?> Function(dynamic paginationKey)
-      pageFetchData;
+      fetchPageData;
 
   /// Callback method that usually should return a [PaginatedItemsBuilder] and
   /// pass the [response] and [fetchPageData] params to the builder.
   final Widget Function(
     PaginatedItemsResponse<T>? response,
-    Future<void> Function(bool) fetchPageData,
+    Future<void> Function(
+      bool reset,
+      ItemsFetchScope itemsFetchScope,
+    )
+        fetchPageData,
   ) builder;
 
   const PaginationItemsStateHandler({
     Key? key,
-    required this.pageFetchData,
+    required this.fetchPageData,
     required this.builder,
   }) : super(key: key);
 
@@ -33,14 +37,14 @@ class _PaginationItemsStateHandlerState<T>
     extends State<PaginationItemsStateHandler<T>> {
   PaginatedItemsResponse<T>? itemsResponse;
 
-  Future<void> _update(bool reset) async {
+  Future<void> _update(bool reset, ItemsFetchScope scope) async {
     if (reset) {
       itemsResponse = null;
       setState(() {});
     }
 
     try {
-      final res = await widget.pageFetchData(itemsResponse?.paginationKey);
+      final res = await widget.fetchPageData(itemsResponse?.paginationKey);
       if (itemsResponse == null) {
         itemsResponse = res;
       } else {
@@ -55,7 +59,7 @@ class _PaginationItemsStateHandlerState<T>
 
   @override
   void initState() {
-    _update(false);
+    _update(false, ItemsFetchScope.initialLoad);
     super.initState();
   }
 

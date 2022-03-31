@@ -36,7 +36,7 @@ class PostsListWithStateHandledExternally extends StatelessWidget {
       child: Scaffold(
         body: PaginatedItemsBuilder<Post>(
           response: _postsCon.postsResponse,
-          fetchPageData: (reset) => _postsCon.updatePosts(
+          fetchPageData: (reset, itemsFetchScope) => _postsCon.updatePosts(
             reset: reset,
             // whether to turn all the existing cards into loaders or not.
             // If true, all the already displayed items will convert into
@@ -45,7 +45,8 @@ class PostsListWithStateHandledExternally extends StatelessWidget {
             // If false, then nothing will change on the screen while the data
             // is being fetched, when the data arrives, the content in the
             // cards will replace.
-            showLoaderOnReset: reset,
+            showLoaderOnReset:
+                itemsFetchScope == ItemsFetchScope.noItemsRefresh,
           ),
           itemBuilder: (context, idx, post) => PostCard(post),
           loaderItemsCount: 10,
@@ -64,8 +65,8 @@ class PostsListWithStateHandledInternally extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  /// function which calls the API and returns obj
-  Future<PaginatedItemsResponse<Post>?> updateProducts(
+  /// function which calls the API and returns [PaginatedItemsResponse]
+  Future<PaginatedItemsResponse<Post>?> updatePosts(
     dynamic paginationKey,
   ) async {
     return await PostsRepository.getPosts(startKey: paginationKey);
@@ -76,7 +77,7 @@ class PostsListWithStateHandledInternally extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         body: PaginationItemsStateHandler<Post>(
-          pageFetchData: updateProducts,
+          fetchPageData: updatePosts,
           builder: (response, fetchPageData) {
             return PaginatedItemsBuilder<Post>(
               response: response,

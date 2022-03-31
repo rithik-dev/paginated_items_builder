@@ -1,5 +1,6 @@
 library paginated_items_builder;
 
+export 'package:paginated_items_builder/src/items_fetch_scope.dart';
 export 'package:shimmer/shimmer.dart';
 
 export 'src/models/paginated_items_builder_config.dart';

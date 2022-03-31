@@ -98,15 +98,49 @@ Now, can use this widget like shown in the widget tree:
 When the reset from fetchPageData fn is true, your code should handle the logic to update
 and replace the existing contents. Basically update all items. Much like a pull-down refresh.
 
-The same code is called when user pulls down to refresh on the view with `reset: true` to update all items. 
+The fetchPageData provides 2 callback values, first one being the `reset` flag(boolean).
+If that is true, that means an action was triggered which requires to
+force reload the items of the list.
+
+The 2nd value is the `ItemsFetchScope`, which defines the action calling the
+fetch data function.
+
+The `reset` flag will be true only when the `itemsFetchScope` is either
+`ItemsFetchScope.noItemsRefresh` i.e. no items were found, and user
+clicked the refresh icon OR `ItemsFetchScope.pullDownToRefresh` i.e.
+the user wants to refresh the list contents with pull-down action.
+
 ```dart
 PaginatedItemsBuilder<Product>(
-    fetchPageData: (reset) => controller.updateProducts(
+    fetchPageData: (reset, itemsFetchScope) => controller.updatePosts(
         reset: reset,
-        showLoaderOnReset: reset,
+        showLoaderOnReset: itemsFetchScope == ItemsFetchScope.noItemsRefresh,
     ),
     response: controller.productsResponse,
     itemBuilder: (context, index, item) => Text('Item$index : $item'),
+),
+```
+
+If the state is handled using PaginationItemsStateHandler, then fetchPageData is handled internally
+and is provided in the `builder` callback.
+
+Use it as follows:
+```dart
+/// function which calls the API and returns `PaginatedItemsResponse`.
+Future<PaginatedItemsResponse<Post>?> updatePosts(dynamic paginationKey) async {
+  return await PostsRepository.getPosts(startKey: paginationKey);
+}
+
+PaginationItemsStateHandler<Post>(
+    fetchPageData: updatePosts,
+    builder: (response, fetchPageData) {
+        return PaginatedItemsBuilder<Post>(
+            response: response,
+            fetchPageData: fetchPageData,
+            itemBuilder: (context, idx, post) => PostCard(post),
+            loaderItemsCount: 10,
+        );
+    },
 ),
 ```
 
