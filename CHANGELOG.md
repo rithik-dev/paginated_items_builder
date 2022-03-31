@@ -1,3 +1,7 @@
+## [1.0.9] - 31/03/2022
+
+* Added ignore pointer to disable onTap for loaders
+
 ## [1.0.8] - 31/03/2022
 
 * Added isLoading param to LoaderShimmer

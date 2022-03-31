@@ -219,7 +219,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   Widget _loaderBuilder([int? index]) {
     Widget _buildMockItemLoader() {
-      final builtMockItem = widget.itemBuilder(context, 0, mockItem!);
+      final builtMockItem = IgnorePointer(
+        child: widget.itemBuilder(context, 0, mockItem!),
+      );
 
       if (index == null) {
         // if index is null, means this loader is being used for initial loading
