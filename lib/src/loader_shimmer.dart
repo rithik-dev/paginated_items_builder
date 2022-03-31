@@ -23,27 +23,36 @@ class LoaderShimmer extends StatelessWidget {
   /// The shimmer's direction. Defaults to [ShimmerConfig.direction].
   final ShimmerDirection? direction;
 
+  /// Whether the shimmer is active or not.
+  final bool isLoading;
+
+  /// The child.
   final Widget child;
 
   const LoaderShimmer({
     Key? key,
+    required this.child,
     this.baseColor,
     this.highlightColor,
     this.duration,
     this.direction,
-    required this.child,
+    this.isLoading = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final shimmerConfig = PaginatedItemsBuilder.config!.shimmerConfig;
 
-    return Shimmer.fromColors(
-      highlightColor: highlightColor ?? shimmerConfig.highlightColor,
-      baseColor: baseColor ?? shimmerConfig.baseColor,
-      period: duration ?? shimmerConfig.duration,
-      direction: direction ?? shimmerConfig.direction,
-      child: child,
-    );
+    if (isLoading) {
+      return Shimmer.fromColors(
+        highlightColor: highlightColor ?? shimmerConfig.highlightColor,
+        baseColor: baseColor ?? shimmerConfig.baseColor,
+        period: duration ?? shimmerConfig.duration,
+        direction: direction ?? shimmerConfig.direction,
+        child: child,
+      );
+    } else {
+      return child;
+    }
   }
 }

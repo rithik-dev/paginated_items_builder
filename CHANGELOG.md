@@ -1,3 +1,7 @@
+## [1.0.8] - 31/03/2022
+
+* Added isLoading param to LoaderShimmer
+
 ## [1.0.7] - 31/03/2022
 
 * Added some helper getters/functions in PaginatedItemsResponse. 
