@@ -183,9 +183,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
             !widget.response!.hasMoreData &&
             !_loadingMoreData)) return;
     setState(() {
-      if (_initialLoading) {
-        _initialLoading = false;
-      } else if (reset) {
+      // if (_initialLoading) {
+      //   _initialLoading = false;
+      // } else
+      if (reset) {
         _initialLoading = true;
       } else {
         _loadingMoreData = true;

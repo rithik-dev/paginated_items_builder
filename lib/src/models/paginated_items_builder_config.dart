@@ -3,6 +3,12 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 
 dynamic _getByType<T>([String? key]) => null;
 
+String _noItemsTextGetter(String name) {
+  final beforeCapitalLetter = RegExp(r"(?=[A-Z])");
+  name = name.split(beforeCapitalLetter).map((e) => e.toLowerCase()).join(' ');
+  return "No ${name}s found!";
+}
+
 /// The config for [PaginatedItemsBuilder].
 class PaginatedItemsBuilderConfig {
   PaginatedItemsBuilderConfig({
@@ -15,14 +21,13 @@ class PaginatedItemsBuilderConfig {
     ),
   })  : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer(),
         mockItemGetter = mockItemGetter ?? _getByType,
-        noItemsTextGetter =
-            noItemsTextGetter ?? ((name) => "No ${name}s found!");
+        noItemsTextGetter = noItemsTextGetter ?? _noItemsTextGetter;
 
   /// Default config
   PaginatedItemsBuilderConfig.defaultConfig() {
     shimmerConfig = ShimmerConfig.defaultShimmer();
     mockItemGetter = _getByType;
-    noItemsTextGetter = (name) => "No ${name}s found!";
+    noItemsTextGetter = _noItemsTextGetter;
     noItemsTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 14,
