@@ -1,3 +1,11 @@
+## [1.1.0] - 01/04/2022
+
+* Added error logs
+* Optimized initializing PaginatedItemsBuilder
+* Added showLoaderOnResetBuilder in PaginationItemsStateHandler to update showLoaderOnReset param for builders with internal state management.
+* Updated example app
+* Updated README.md
+
 ## [1.0.9] - 31/03/2022
 
 * Added ignore pointer to disable onTap for loaders

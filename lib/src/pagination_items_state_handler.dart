@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:flutter/material.dart';
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 
@@ -22,10 +24,28 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
         fetchPageData,
   ) builder;
 
+  /// Whether to switch all the cards to their respective loaders when [reset] is true,
+  /// i.e. if the user pulls down to refresh, or no items were found...
+  ///
+  /// The callback value is the [ItemsFetchScope], which defines the action calling the
+  /// fetch data function.
+  ///
+  /// The [reset] flag will be true only when the [itemsFetchScope] is either
+  /// [ItemsFetchScope.noItemsRefresh] i.e. no items were found, and user
+  /// clicked the refresh icon OR [ItemsFetchScope.pullDownToRefresh] i.e.
+  /// the user wants to refresh the list contents with pull-down action.
+  ///
+  /// This callback will only be called if [reset] is true.
+  ///
+  /// By default, [showLoaderOnResetBuilder] is true only if [scope] is [ItemsFetchScope.noItemsRefresh].
+  final bool Function(ItemsFetchScope itemsFetchScope)?
+      showLoaderOnResetBuilder;
+
   const PaginationItemsStateHandler({
     Key? key,
     required this.fetchPageData,
     required this.builder,
+    this.showLoaderOnResetBuilder,
   }) : super(key: key);
 
   @override
@@ -35,22 +55,37 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
 
 class _PaginationItemsStateHandlerState<T>
     extends State<PaginationItemsStateHandler<T>> {
-  PaginatedItemsResponse<T>? itemsResponse;
+  PaginatedItemsResponse<T>? _itemsResponse;
 
   Future<void> _update(bool reset, ItemsFetchScope scope) async {
-    if (reset) {
-      itemsResponse = null;
+    bool showLoaderOnReset = scope == ItemsFetchScope.noItemsRefresh;
+    if (reset && widget.showLoaderOnResetBuilder != null) {
+      showLoaderOnReset = widget.showLoaderOnResetBuilder!(scope);
+    }
+
+    // showLoaderOnReset only used if reset is true...
+    if (reset && showLoaderOnReset) {
+      _itemsResponse = null;
       setState(() {});
     }
 
     try {
-      final res = await widget.fetchPageData(itemsResponse?.paginationKey);
-      if (itemsResponse == null) {
-        itemsResponse = res;
+      final res = await widget.fetchPageData(
+        reset ? null : _itemsResponse?.paginationKey,
+      );
+      if (reset || _itemsResponse == null) {
+        _itemsResponse = res;
       } else {
-        itemsResponse!.update(res);
+        _itemsResponse!.update(res);
       }
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      dev.log(
+        '\nSomething went wrong.. Most probably the fetchPageData failed due to some error! Please handle any possible errors in the fetchPageData call.',
+        name: 'PaginationItemsStateHandler<$T>',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
 
     try {
       setState(() {});
@@ -58,13 +93,5 @@ class _PaginationItemsStateHandlerState<T>
   }
 
   @override
-  void initState() {
-    _update(false, ItemsFetchScope.initialLoad);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.builder(itemsResponse, _update);
-  }
+  Widget build(BuildContext context) => widget.builder(_itemsResponse, _update);
 }

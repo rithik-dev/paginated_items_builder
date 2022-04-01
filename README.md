@@ -52,14 +52,18 @@ Future<void> updateProducts({
     notifyListeners();
   }
 
-  final res = await apiFunction(
-    // startKey is optional and only required when you have pagination support in api
-    startKey: reset ? null : _productsResponse?.paginationKey,
-  );
-  if (reset || _productsResponse == null) {
-    _productsResponse = res;
-  } else {
-    _productsResponse!.update(res);
+  try {
+    final res = await apiFunction(
+      // startKey is optional and only required when you have pagination support in api
+      startKey: reset ? null : _productsResponse?.paginationKey,
+    );
+    if (reset || _productsResponse == null) {
+      _productsResponse = res;
+    } else {
+      _productsResponse!.update(res);
+    }
+  } catch(_) {
+    // handle error
   }
   notifyListeners();
 }
@@ -72,23 +76,36 @@ Future<PaginatedItemsResponse<Product>?> apiFunction({
   // can be string or int (page number) or any other type.
   dynamic startKey,
 }) async {
-  // startKey necessary if pagination support
-  final res = await _api.getProducts(startKey: startKey);
+ try {
+   // startKey necessary if pagination support
+   final res = await _api.getProducts(startKey: startKey);
 
-  return PaginatedItemsResponse<Product>(
+   return PaginatedItemsResponse<Product>(
 
-    // list of items
-    listItems: res.data?.products,
+     // list of items
+     listItems: res.data?.products,
 
-    // only required to pass if pagination supported, else null. (can be of any type)
-    paginationKey: res.data?.paginationKey,
+     // only required to pass if pagination supported, else null. (can be of any type)
+     paginationKey: res.data?.paginationKey,
 
-    // unique id, should only be passed in the repository function.
-    // required for functions like `updateItem`, `findByUid`
-    // and avoiding duplication of items in list (compares uid)
-    idGetter: (product) => product.id,
+     // unique id, should only be passed in the repository function.
+     // required for functions like `updateItem`, `findByUid`
+     // and avoiding duplication of items in list (compares uid)
+     idGetter: (product) => product.id,
 
-  );
+   );
+ } catch(_) {
+   // handling error is important as if null is returned, the `response` becomes null,
+   // which in turn causes infinite loading...
+   
+   // hence, returning a response with empty list, so that screen shows the no items found text, 
+   // so that the user can refresh the contents, and you can probably have a snackBar or toast, 
+   // notifying the user of the error...
+   return  PaginatedItemsResponse<Product>(
+     listItems: [],
+     idGetter: (product) => product.id,
+   );
+ }
 }
 ```
 
@@ -145,6 +162,7 @@ Future<PaginatedItemsResponse<Post>?> updatePosts(dynamic paginationKey) async {
 
 PaginationItemsStateHandler<Post>(
     fetchPageData: updatePosts,
+    showLoaderOnResetBuilder: (itemsFetchScope) => itemsFetchScope == ItemsFetchScope.noItemsRefresh,
     builder: (response, fetchPageData) {
         return PaginatedItemsBuilder<Post>(
             response: response,

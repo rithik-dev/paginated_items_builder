@@ -25,13 +25,17 @@ class PostsController extends ChangeNotifier {
       notifyListeners();
     }
 
-    final res = await PostsRepository.getPosts(
-      startKey: _postsResponse?.paginationKey,
-    );
-    if (reset || _postsResponse == null) {
-      _postsResponse = res;
-    } else {
-      _postsResponse!.update(res);
+    try {
+      final res = await PostsRepository.getPosts(
+        startKey: reset ? null : _postsResponse?.paginationKey,
+      );
+      if (reset || _postsResponse == null) {
+        _postsResponse = res;
+      } else {
+        _postsResponse!.update(res);
+      }
+    } catch (_) {
+      // handle error
     }
     notifyListeners();
   }

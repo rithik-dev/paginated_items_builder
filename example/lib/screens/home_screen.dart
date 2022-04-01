@@ -78,6 +78,8 @@ class PostsListWithStateHandledInternally extends StatelessWidget {
       child: Scaffold(
         body: PaginationItemsStateHandler<Post>(
           fetchPageData: updatePosts,
+          showLoaderOnResetBuilder: (itemsFetchScope) =>
+              itemsFetchScope == ItemsFetchScope.noItemsRefresh,
           builder: (response, fetchPageData) {
             return PaginatedItemsBuilder<Post>(
               response: response,

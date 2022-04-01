@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -182,6 +183,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         (widget.response != null &&
             !widget.response!.hasMoreData &&
             !_loadingMoreData)) return;
+
     setState(() {
       // if (_initialLoading) {
       //   _initialLoading = false;
@@ -195,10 +197,18 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     try {
       await widget.fetchPageData(reset, itemsFetchScope);
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      dev.log(
+        '\nSomething went wrong.. Most probably the fetchPageData failed due to some error! Please handle any possible errors in the fetchPageData call.',
+        name: 'PaginationItemsBuilder<$T>',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
 
     if (_initialLoading) _initialLoading = false;
     if (_loadingMoreData) _loadingMoreData = false;
+
     try {
       setState(() {});
     } catch (_) {}
@@ -289,11 +299,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         ? _config?.mockItemGetter<T>()
         : _config?.mockItemGetter(widget.mockItemKey);
 
-    final itemsStateHandlerAsParent =
-        context.findAncestorWidgetOfExactType<PaginationItemsStateHandler<T>>();
-    if (itemsStateHandlerAsParent == null) {
-      _fetchData(itemsFetchScope: ItemsFetchScope.initialLoad);
-    }
+    _fetchData(itemsFetchScope: ItemsFetchScope.initialLoad);
 
     PaginatedItemsBuilder.config ??=
         PaginatedItemsBuilderConfig.defaultConfig();
