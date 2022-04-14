@@ -1,6 +1,7 @@
 import 'dart:developer' as dev;
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 
@@ -24,6 +25,9 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     required this.itemBuilder,
     this.itemsDisplayType = ItemsDisplayType.list,
     this.shrinkWrap = false,
+    this.reverse = false,
+    this.clipBehaviour = Clip.hardEdge,
+    this.cacheExtent,
     this.disableRefreshIndicator = false,
     this.logError,
     this.paginate = true,
@@ -50,18 +54,23 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.gridCrossAxisSpacing,
     this.gridChildAspectRatio,
     this.scrollDirection = Axis.vertical,
+    this.primary,
     this.mockItemKey,
+    this.gridSemanticChildCount,
+    this.addAutomaticKeepAlives = true,
+    this.addRepaintBoundaries = true,
+    this.addSemanticIndexes = true,
+    this.restorationId,
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
   }) : super(key: key);
 
   /// This is the controller function that should handle fetching the list
   /// and updating in the state.
   ///
-  /// It provides 2 callback values, first one being the [reset] flag(boolean).
-  /// If that is true, that means an action was triggered which requires to
+  /// The callback value provided is reset, If that is true,
+  /// that means an action was triggered which requires to
   /// force reload the items of the list.
-  ///
-  /// The 2nd value is the [ItemsFetchScope], which defines the action calling the
-  /// fetch data function.
   ///
   /// The [reset] flag will be true only when the [itemsFetchScope] is either
   /// [ItemsFetchScope.noItemsRefresh] i.e. no items were found, and user
@@ -219,7 +228,146 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// config
   static PaginatedItemsBuilderConfig? config;
 
-  // -------- list params -------- //
+  // -------- params that are passed directly to the list/grid view -------- //
+
+  /// Whether the scroll view scrolls in the reading direction.
+  ///
+  /// For example, if the reading direction is left-to-right and
+  /// [scrollDirection] is [Axis.horizontal], then the scroll view scrolls from
+  /// left to right when [reverse] is false and from right to left when
+  /// [reverse] is true.
+  ///
+  /// Similarly, if [scrollDirection] is [Axis.vertical], then the scroll view
+  /// scrolls from top to bottom when [reverse] is false and from bottom to top
+  /// when [reverse] is true.
+  ///
+  /// Defaults to false.
+  final bool reverse;
+
+  /// The viewport has an area before and after the
+  /// visible area to cache items that are about to become visible
+  /// when the user scrolls.
+  ///
+  /// Items that fall in this cache area are laid out even though they are
+  /// not (yet) visible on screen. The cacheExtent describes
+  /// how many pixels the cache area extends before the leading
+  /// edge and after the trailing edge of the viewport.
+  ///
+  /// The total extent, which the viewport will try to cover with children,
+  /// is cacheExtent before the leading edge + extent of the main axis +
+  /// cacheExtent after the trailing edge.
+  ///
+  /// The cache area is also used to implement implicit accessibility
+  /// scrolling on iOS: When the accessibility focus moves from an
+  /// item in the visible viewport to an invisible item in the cache area,
+  /// the framework will bring that item into view with
+  /// an (implicit) scroll action.
+  final double? cacheExtent;
+
+  /// The content will be clipped (or not) according to this option.
+  ///
+  /// See the enum Clip for details of all possible options and
+  /// their common use cases.
+  ///
+  /// Defaults to [Clip.hardEdge].
+  final Clip clipBehaviour;
+
+  /// Whether this is the primary scroll view associated with the parent
+  /// [PrimaryScrollController].
+  ///
+  /// When this is true, the scroll view is scrollable even if it does not have
+  /// sufficient content to actually scroll. Otherwise, by default the user can
+  /// only scroll the view if it has sufficient content. See [physics].
+  ///
+  /// Also when true, the scroll view is used for default [ScrollAction]s. If a
+  /// ScrollAction is not handled by an otherwise focused part of the application,
+  /// the ScrollAction will be evaluated using this scroll view, for example,
+  /// when executing [Shortcuts] key events like page up and down.
+  ///
+  /// On iOS, this also identifies the scroll view that will scroll to top in
+  /// response to a tap in the status bar.
+  ///
+  /// Defaults to true when [scrollDirection] is [Axis.vertical] and
+  /// [controller] is null.
+  final bool? primary;
+
+  /// Whether to wrap each child in an [AutomaticKeepAlive].
+  ///
+  /// Typically, children in lazy list are wrapped in [AutomaticKeepAlive]
+  /// widgets so that children can use [KeepAliveNotification]s to preserve
+  /// their state when they would otherwise be garbage collected off-screen.
+  ///
+  /// This feature (and [addRepaintBoundaries]) must be disabled if the children
+  /// are going to manually maintain their [KeepAlive] state. It may also be
+  /// more efficient to disable this feature if it is known ahead of time that
+  /// none of the children will ever try to keep themselves alive.
+  ///
+  /// Defaults to true.
+  final bool addAutomaticKeepAlives;
+
+  /// Whether to wrap each child in a [RepaintBoundary].
+  ///
+  /// Typically, children in a scrolling container are wrapped in repaint
+  /// boundaries so that they do not need to be repainted as the list scrolls.
+  /// If the children are easy to repaint (e.g., solid color blocks or a short
+  /// snippet of text), it might be more efficient to not add a repaint boundary
+  /// and simply repaint the children during scrolling.
+  ///
+  /// Defaults to true.
+  final bool addRepaintBoundaries;
+
+  /// Whether to wrap each child in an [IndexedSemantics].
+  ///
+  /// Typically, children in a scrolling container must be annotated with a
+  /// semantic index in order to generate the correct accessibility
+  /// announcements. This should only be set to false if the indexes have
+  /// already been provided by an [IndexedSemantics] widget.
+  ///
+  /// Defaults to true.
+  ///
+  /// See also:
+  ///
+  ///  * [IndexedSemantics], for an explanation of how to manually
+  ///    provide semantic indexes.
+  final bool addSemanticIndexes;
+
+  /// Restoration ID to save and restore the scroll offset of the scrollable.
+  ///
+  /// If a restoration id is provided, the scrollable will persist its current
+  /// scroll offset and restore it during state restoration.
+  ///
+  /// The scroll offset is persisted in a RestorationBucket claimed from the
+  /// surrounding RestorationScope using the provided restoration ID.
+  ///
+  ///   * [RestorationManager], which explains how state restoration
+  ///   works in Flutter.
+  final String? restorationId;
+
+  /// Determines the way that drag start behavior is handled.
+  ///
+  /// If set to [DragStartBehavior.start], scrolling drag behavior will begin
+  /// at the position where the drag gesture won the arena.
+  ///
+  /// If set to [DragStartBehavior.down] it will begin at the position
+  /// where a down event is first detected.
+  ///
+  /// In general, setting this to [DragStartBehavior.start] will make
+  /// drag animation smoother and setting it to [DragStartBehavior.down]
+  /// will make drag behavior feel slightly more reactive.
+  ///
+  /// By default, the drag start behavior is [DragStartBehavior.start].
+  ///
+  /// See also:
+  ///
+  ///   * [DragGestureRecognizer.dragStartBehavior], which gives
+  ///   an example for the different behaviors
+  final DragStartBehavior dragStartBehavior;
+
+  /// [ScrollViewKeyboardDismissBehavior] the defines how this [ScrollView]
+  /// will dismiss the keyboard automatically.
+  final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
+
+  // -------- list-specific params -------- //
 
   /// The gap between concurrent list items.
   /// Has no effect if [listSeparatorWidget] is not null.
@@ -228,7 +376,22 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// Separator for items in a list view.
   final Widget? listSeparatorWidget;
 
-  // -------- grid params -------- //
+  // -------- grid-specific params -------- //
+
+  /// The number of children that will contribute semantic information.
+  ///
+  /// Some subtypes of [ScrollView] can infer this value automatically. For
+  /// example [ListView] will use the number of widgets in the child list,
+  /// while the [ListView.separated] constructor will use half that amount.
+  ///
+  /// For [CustomScrollView] and other types which do not receive a builder
+  /// or list of widgets, the child count must be explicitly provided. If the
+  /// number is unknown or unbounded this should be left unset or set to null.
+  ///
+  /// See also:
+  ///
+  ///  * [SemanticsConfiguration.scrollChildCount], the corresponding semantics property.
+  final int? gridSemanticChildCount;
 
   /// The grid's delegate, controlling the layout of tiles in a grid.
   /// Used if [itemsDisplayType] is [ItemsDisplayType.grid].
@@ -503,7 +666,17 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       shrinkWrap: widget.shrinkWrap,
       physics: scrollPhysics,
       controller: widget.scrollController,
+      addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
+      addRepaintBoundaries: widget.addRepaintBoundaries,
+      addSemanticIndexes: widget.addSemanticIndexes,
+      dragStartBehavior: widget.dragStartBehavior,
+      keyboardDismissBehavior: widget.keyboardDismissBehavior,
+      primary: widget.primary,
+      restorationId: widget.restorationId,
       scrollDirection: widget.scrollDirection,
+      reverse: widget.reverse,
+      clipBehavior: widget.clipBehaviour,
+      cacheExtent: widget.cacheExtent,
       itemBuilder: _itemBuilder,
       padding: widget.padding,
       separatorBuilder: (_, __) =>
@@ -521,7 +694,18 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       shrinkWrap: widget.shrinkWrap,
       physics: scrollPhysics,
       controller: widget.scrollController,
+      addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
+      addRepaintBoundaries: widget.addRepaintBoundaries,
+      addSemanticIndexes: widget.addSemanticIndexes,
+      dragStartBehavior: widget.dragStartBehavior,
+      keyboardDismissBehavior: widget.keyboardDismissBehavior,
+      primary: widget.primary,
+      restorationId: widget.restorationId,
+      semanticChildCount: widget.gridSemanticChildCount,
       scrollDirection: widget.scrollDirection,
+      reverse: widget.reverse,
+      clipBehavior: widget.clipBehaviour,
+      cacheExtent: widget.cacheExtent,
       itemBuilder: _itemBuilder,
       gridDelegate: widget.gridDelegate ??
           SliverGridDelegateWithFixedCrossAxisCount(

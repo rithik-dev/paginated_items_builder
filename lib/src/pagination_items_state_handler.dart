@@ -13,6 +13,11 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
 
   /// Callback method that usually should return a [PaginatedItemsBuilder] and
   /// pass the [response] and [fetchPageData] params to the builder.
+  ///
+  /// See also:
+  ///
+  ///   * [PaginatedItemsBuilder.response]
+  ///   * [PaginatedItemsBuilder.fetchPageData]
   final Widget Function(
     PaginatedItemsResponse<T>? response,
     Future<void> Function(bool reset) fetchPageData,
