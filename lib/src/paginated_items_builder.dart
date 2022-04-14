@@ -80,6 +80,8 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// If state is handled using [PaginationItemsStateHandler],
   /// then the builder in it provides this argument and should be passed directly.
+  ///
+  /// NOTE: If null is returned from [fetchPageData], then an exception will be thrown..
   final Future<PaginatedItemsResponse<T>?> Function(bool reset) fetchPageData;
 
   /// Callback function which requires a widget that is rendered for each item.
