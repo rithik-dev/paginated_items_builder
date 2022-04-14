@@ -28,62 +28,53 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 
 You can now add a [`PaginatedItemsBuilder`](https://github.com/rithik-dev/paginated_items_builder/blob/master/lib/src/paginated_items_builder.dart) widget to your widget tree.
 
-Here, let's consider a list of products.
+Here, let's consider a list of posts.
 
-First, in the controller, let's define a variable for handling the products response. 
+First, in the controller, let's define a variable for handling the posts response. 
 (typically inside the specific controller) and a public getter to access it in the UI.
 
 ```dart
-PaginatedItemsResponse<Product>? _productsResponse;
+PaginatedItemsResponse<Post>? _postsResponse;
 
-PaginatedItemsResponse<Product>? get productsResponse => _productsResponse;
+PaginatedItemsResponse<Post>? get postsResponse => _postsResponse;
 ```
 
 Now, define a function to handle the state of the list, function that handles calling the api and 
 getting the results.
 
-```dart
-Future<void> updateProducts({
-  bool reset = false,
-  bool showLoaderOnReset = false,
-}) async {
-  if (reset && showLoaderOnReset) {
-    _productsResponse = null;
-    notifyListeners();
-  }
+And return the response handler from it.
 
-  try {
-    final res = await apiFunction(
-      // startKey is optional and only required when you have pagination support in api
-      startKey: reset ? null : _productsResponse?.paginationKey,
-    );
-    if (reset || _productsResponse == null) {
-      _productsResponse = res;
-    } else {
-      _productsResponse!.update(res);
-    }
-  } catch(_) {
-    // handle error
+```dart
+Future<PaginatedItemsResponse<Post>?> updatePosts({bool reset = false}) async {
+  final res = await apiFunction(
+    // startKey is optional and only required when you have pagination support in api
+    startKey: reset ? null : _postsResponse?.paginationKey,
+  );
+  
+  if (reset || _postsResponse == null) {
+    // if res here is null, then an exception is thrown...
+    _postsResponse = res;
+  } else {
+    _postsResponse?.update(res);
   }
   notifyListeners();
+  return _postsResponse;
 }
 ```
 
 The `apiFunction` can be defined as:
-
 ```dart
-Future<PaginatedItemsResponse<Product>?> apiFunction({
+Future<PaginatedItemsResponse<Post>> apiFunction({
   // can be string or int (page number) or any other type.
   dynamic startKey,
 }) async {
- try {
    // startKey necessary if pagination support
-   final res = await _api.getProducts(startKey: startKey);
+   final res = await _api.getPosts(startKey: startKey);
 
-   return PaginatedItemsResponse<Product>(
+   return PaginatedItemsResponse<Post>(
 
      // list of items
-     listItems: res.data?.products,
+     listItems: res.data?.posts,
 
      // only required to pass if pagination supported, else null. (can be of any type)
      paginationKey: res.data?.paginationKey,
@@ -91,31 +82,18 @@ Future<PaginatedItemsResponse<Product>?> apiFunction({
      // unique id, should only be passed in the repository function.
      // required for functions like `updateItem`, `findByUid`
      // and avoiding duplication of items in list (compares uid)
-     idGetter: (product) => product.id,
-
+     idGetter: (post) => post.id,
    );
- } catch(_) {
-   // handling error is important as if null is returned, the `response` becomes null,
-   // which in turn causes infinite loading...
-   
-   // hence, returning a response with empty list, so that screen shows the no items found text, 
-   // so that the user can refresh the contents, and you can probably have a snackBar or toast, 
-   // notifying the user of the error...
-   return  PaginatedItemsResponse<Product>(
-     listItems: [],
-     idGetter: (product) => product.id,
-   );
- }
 }
 ```
 
 You can also log the result directly by using the `log()` function on the `PaginatedItemsResponse`
 directly...
 ```dart
-final response = PaginatedItemsResponse<Product>(
-    listItems: res.data?.products,
+final response = PaginatedItemsResponse<Post>(
+    listItems: res.data?.posts,
     paginationKey: res.data?.paginationKey,
-    idGetter: (product) => product.id,
+    idGetter: (post) => post.id,
 );
 
 response.log();
@@ -127,48 +105,62 @@ Now, can use this widget like shown in the widget tree:
 When the reset from fetchPageData fn is true, your code should handle the logic to update
 and replace the existing contents. Basically update all items. Much like a pull-down refresh.
 
-The fetchPageData provides 2 callback values, first one being the `reset` flag(boolean).
+The fetchPageData provides the `reset` flag(boolean).
 If that is true, that means an action was triggered which requires to
 force reload the items of the list.
-
-The 2nd value is the `ItemsFetchScope`, which defines the action calling the
-fetch data function.
 
 The `reset` flag will be true only when the `itemsFetchScope` is either
 `ItemsFetchScope.noItemsRefresh` i.e. no items were found, and user
 clicked the refresh icon OR `ItemsFetchScope.pullDownToRefresh` i.e.
-the user wants to refresh the list contents with pull-down action.
+the user wants to refresh the list contents with pull-down action OR 
+`ItemsFetchScope.onErrorRefresh` if an error occurs.
 
 ```dart
-PaginatedItemsBuilder<Product>(
-    fetchPageData: (reset, itemsFetchScope) => controller.updatePosts(
-        reset: reset,
-        showLoaderOnReset: itemsFetchScope == ItemsFetchScope.noItemsRefresh,
-    ),
-    response: controller.productsResponse,
+PaginatedItemsBuilder<Post>(
+    response: controller.postsResponse,
+    fetchPageData: (reset) => controller.updatePosts(reset: reset),
+    
+    // whether to turn all the existing cards into loaders or not.
+    // If true, all the already displayed items will convert into
+    // loaders, and then the new list will be rendered.
+    
+    // If false, then nothing will change on the screen while the data
+    // is being fetched, when the data arrives, the content in the
+    // cards will replace.
+    showLoaderOnResetGetter: (itemsFetchScope) => [
+      ItemsFetchScope.noItemsRefresh,
+      ItemsFetchScope.onErrorRefresh,
+      ItemsFetchScope.pullDownToRefresh,
+    ].contains(itemsFetchScope),
+
+    /// whether to display items in a list or grid view.
+    itemsDisplayType: ItemsDisplayType.list,
+    
+    /// there are params to customize your list / grid view even further.
+    /// Read more below...
     itemBuilder: (context, index, item) => Text('Item$index : $item'),
 ),
-```
+``` 
+... and a lot of parameters that can be passed. [Read more.](https://github.com/rithik-dev/paginated_items_builder/blob/master/lib/src/paginated_items_builder.dart#L20)
 
-If the state is handled using PaginationItemsStateHandler, then fetchPageData is handled internally
+If the state is handled using PaginationItemsStateHandler, then response and fetchPageData is handled internally
 and is provided in the `builder` callback.
 
 Use it as follows:
 ```dart
 /// function which calls the API and returns `PaginatedItemsResponse`.
-Future<PaginatedItemsResponse<Post>?> updatePosts(dynamic paginationKey) async {
+Future<PaginatedItemsResponse<Post>> updatePosts(dynamic paginationKey) async {
   return await PostsRepository.getPosts(startKey: paginationKey);
 }
 
 PaginationItemsStateHandler<Post>(
     fetchPageData: updatePosts,
-    showLoaderOnResetBuilder: (itemsFetchScope) => itemsFetchScope == ItemsFetchScope.noItemsRefresh,
     builder: (response, fetchPageData) {
         return PaginatedItemsBuilder<Post>(
             response: response,
             fetchPageData: fetchPageData,
             itemBuilder: (context, idx, post) => PostCard(post),
-            loaderItemsCount: 10,
+            loaderItemsCount: 12,
         );
     },
 ),
@@ -243,6 +235,7 @@ PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
     ),
 );
 ```
+... and more
 
 The config can be initialized in the MaterialApp's builder property. It is also possible to
 pass different colors for different themes as shown:

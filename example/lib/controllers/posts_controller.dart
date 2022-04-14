@@ -16,16 +16,19 @@ class PostsController extends ChangeNotifier {
 
   PaginatedItemsResponse<Post>? get postsResponse => _postsResponse;
 
-  Future<void> updatePosts({bool reset = false}) async {
+  Future<PaginatedItemsResponse<Post>?> updatePosts({
+    bool reset = false,
+  }) async {
     final res = await PostsRepository.getPosts(
       startKey: reset ? null : _postsResponse?.paginationKey,
     );
     if (reset || _postsResponse == null) {
       _postsResponse = res;
     } else {
-      _postsResponse!.update(res);
+      _postsResponse?.update(res);
     }
     notifyListeners();
+    return _postsResponse;
   }
 
   void clear() {

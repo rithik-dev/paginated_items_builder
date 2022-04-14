@@ -80,7 +80,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// If state is handled using [PaginationItemsStateHandler],
   /// then the builder in it provides this argument and should be passed directly.
-  final Future<void> Function(bool reset) fetchPageData;
+  final Future<PaginatedItemsResponse<T>?> Function(bool reset) fetchPageData;
 
   /// Callback function which requires a widget that is rendered for each item.
   /// Provides context, index of the item in the list and the item itself.
@@ -447,14 +447,16 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     });
 
     try {
-      await widget.fetchPageData(reset);
+      final res = await widget.fetchPageData(reset);
+      if (res == null) throw Exception('null response');
+
       _error = null;
     } catch (error, stackTrace) {
       _error = error;
 
       if (widget.logError ?? config.logErrors) {
         dev.log(
-          '\nSomething went wrong.. Most probably the fetchPageData failed due to some error! Please handle any possible errors in the fetchPageData call.',
+          '\nSomething went wrong! Most probably the fetchPageData failed due to some error! Please handle any possible errors in the fetchPageData call.',
           name: 'PaginationItemsBuilder<$T>',
           error: error,
           stackTrace: stackTrace,

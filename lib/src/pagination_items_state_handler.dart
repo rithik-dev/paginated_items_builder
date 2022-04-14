@@ -20,7 +20,7 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
   ///   * [PaginatedItemsBuilder.fetchPageData]
   final Widget Function(
     PaginatedItemsResponse<T>? response,
-    Future<void> Function(bool reset) fetchPageData,
+    Future<PaginatedItemsResponse<T>?> Function(bool reset) fetchPageData,
   ) builder;
 
   const PaginationItemsStateHandler({
@@ -38,21 +38,24 @@ class _PaginationItemsStateHandlerState<T>
     extends State<PaginationItemsStateHandler<T>> {
   PaginatedItemsResponse<T>? _itemsResponse;
 
-  Future<void> _update(bool reset) async {
+  Future<PaginatedItemsResponse<T>?> _update(bool reset) async {
     // if something fails, the [errorWidgetBuilder] will be called in [PaginatedItemsBuilder].
     final res = await widget.fetchPageData(
       reset ? null : _itemsResponse?.paginationKey,
     );
 
     if (reset || _itemsResponse == null) {
+      // res should not be null
       _itemsResponse = res;
     } else {
-      _itemsResponse!.update(res);
+      _itemsResponse?.update(res);
     }
 
     try {
       setState(() {});
     } catch (_) {}
+
+    return _itemsResponse;
   }
 
   @override

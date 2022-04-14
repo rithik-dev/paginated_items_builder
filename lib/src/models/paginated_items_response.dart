@@ -44,17 +44,6 @@ class PaginatedItemsResponse<T> {
 
   void operator []=(int index, T value) => items?[index] = value;
 
-  /// If null is passed, the [items] will be cleared,
-  /// and [paginationKey] will be null.
-  void update(PaginatedItemsResponse<T>? res) {
-    if (res == null) {
-      items = [];
-      paginationKey = null;
-    } else {
-      _update(res.items, res.paginationKey);
-    }
-  }
-
   /// update a specific item with uid, or add if does not exists according to
   /// [addIfDoesNotExist].
   void updateItem(
@@ -72,6 +61,11 @@ class PaginatedItemsResponse<T> {
     } else {
       if (item != null && addIfDoesNotExist) items!.add(item);
     }
+  }
+
+  /// Updates the response
+  void update(PaginatedItemsResponse<T> res) {
+    _update(res.items, res.paginationKey);
   }
 
   /// Append items to the list, after a successful fetch from the API.

@@ -1,3 +1,21 @@
+## [1.2.0] - 15/04/2022
+
+* Added a new ItemsFetchScope i.e. onErrorRefresh, which comes in play if an error occurs
+* Added error handling in the builder
+* Added showLoaderOnResetGetter param on the builder itself
+* gridDelegate is now customizable if ItemsDisplayType is grid.
+* Fixed LoaderShimmer err for null configs
+* Added logErrors param to PaginatedItemsBuilderConfig
+* Minor fixes to PaginatedItemsResponse
+* Added callbacks for emptyTextBuilder, emptyWidgetBuilder for more customization
+* Added callbacks for errorTextBuilder, errorWidgetBuilder for more customization
+* Optimizations done to the main widget
+* Updated pagination items state handler
+* Added remaining list/grid view params that can now be passed directly
+* Update dart doc comments
+* Updated example app
+* Fixed README.md
+
 ## [1.1.0] - 01/04/2022
 
 * Added error logs
