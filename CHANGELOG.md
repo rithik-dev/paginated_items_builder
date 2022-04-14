@@ -10,6 +10,7 @@
 * Added callbacks for emptyTextBuilder, emptyWidgetBuilder for more customization
 * Added callbacks for errorTextBuilder, errorWidgetBuilder for more customization
 * Optimizations done to the main widget
+* Added check for null response
 * Updated pagination items state handler
 * Added remaining list/grid view params that can now be passed directly
 * Update dart doc comments
