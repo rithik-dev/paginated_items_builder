@@ -1,14 +1,23 @@
 import 'dart:developer' as dev;
 
 /// The response object that carries the list of items and handles pagination
-/// internally. The [paginationKey] is optional and can be of any type. If not passed,
-/// it is assumed that the API does not support pagination.
-///
+/// internally. The [paginationKey] is optional and can be of any type.
+/// If not passed, it is assumed that the API does not support pagination.
 ///
 /// The [idGetter] should be passed when receiving the response from the API, it
 /// is required for functions like `updateItem`, `findByUid`
 /// and avoiding duplication of items in list (compares id).
 class PaginatedItemsResponse<T> {
+  /// constructor
+  PaginatedItemsResponse({
+    String Function(T)? idGetter,
+    Iterable<T>? listItems,
+    dynamic paginationKey,
+  }) {
+    _idGetterFn ??= idGetter;
+    _update(listItems, paginationKey);
+  }
+
   /// List of items of type [T]
   List<T>? items;
 
@@ -24,12 +33,6 @@ class PaginatedItemsResponse<T> {
   /// True if [items] is not null.
   bool get hasData => items != null;
 
-  /// True if the list is either empty or null.
-  bool get isEmpty => items?.isEmpty ?? true;
-
-  /// True if the list is neither empty nor null.
-  bool get isNotEmpty => !isEmpty;
-
   /// Find an object by [id].
   // ignore: body_might_complete_normally_nullable
   T? findByUid(String id) {
@@ -41,18 +44,15 @@ class PaginatedItemsResponse<T> {
 
   void operator []=(int index, T value) => items?[index] = value;
 
-  /// constructor
-  PaginatedItemsResponse({
-    String Function(T)? idGetter,
-    Iterable<T>? listItems,
-    dynamic paginationKey,
-  }) {
-    _idGetterFn ??= idGetter;
-    _update(listItems, paginationKey);
-  }
-
+  /// If null is passed, the [items] will be cleared,
+  /// and [paginationKey] will be null.
   void update(PaginatedItemsResponse<T>? res) {
-    if (res != null) _update(res.items, res.paginationKey);
+    if (res == null) {
+      items = [];
+      paginationKey = null;
+    } else {
+      _update(res.items, res.paginationKey);
+    }
   }
 
   /// update a specific item with uid, or add if does not exists according to

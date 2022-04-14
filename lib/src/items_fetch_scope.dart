@@ -1,4 +1,7 @@
-/// Defines the scope from which [fetchPageData] in [PaginatedItemsBuilder] was called.
+import 'paginated_items_builder.dart';
+
+/// Defines the scope from which [PaginatedItemsBuilder.fetchPageData]
+/// in [PaginatedItemsBuilder] was called.
 enum ItemsFetchScope {
   /// On user's pull down to refresh.
   pullDownToRefresh,
@@ -12,4 +15,7 @@ enum ItemsFetchScope {
   /// When more data to load was requested.
   /// Will only be triggered if pagination is supported.
   loadMoreData,
+
+  /// In an error occurs, and [resetOnTap] is called from the [errorWidgetBuilder] callback.
+  onErrorRefresh,
 }

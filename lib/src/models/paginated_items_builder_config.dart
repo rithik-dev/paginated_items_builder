@@ -19,6 +19,7 @@ class PaginatedItemsBuilderConfig {
       fontWeight: FontWeight.w600,
       fontSize: 14,
     ),
+    this.logErrors = true,
   })  : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer(),
         mockItemGetter = mockItemGetter ?? _getByType,
         noItemsTextGetter = noItemsTextGetter ?? _noItemsTextGetter;
@@ -32,6 +33,7 @@ class PaginatedItemsBuilderConfig {
       fontWeight: FontWeight.w600,
       fontSize: 14,
     );
+    logErrors = true;
   }
 
   /// Create a function and pass the reference to this.
@@ -40,15 +42,18 @@ class PaginatedItemsBuilderConfig {
   /// data of type `T`. This calls the [PaginatedItemsBuilder]'s [itemBuilder]
   /// with the mockItem and overlays a shimmer for loading animation.
   ///
+  /// ```dart
   /// class MockItems {
-  ///   static T? getMockItemByType<T>() {
-  ///     switch (T.toString()) {
-  ///       case 'Product':
-  ///         return _product as T?;
-  ///     }
-  ///   }
+  ///   static dynamic getMockItemByType<T>([String? key]) {
+  //     final typeKey = key ?? T.toString();
+  //     switch (typeKey) {
+  //       case 'Post':
+  //         return _post as T;
+  //     }
+  //   }
   ///
-  ///   static final _product = Product();
+  ///   static final _post = Post();
+  ///   ```
   /// }
   late final dynamic Function<T>([String? key]) mockItemGetter;
 
@@ -62,6 +67,9 @@ class PaginatedItemsBuilderConfig {
   /// Customize the style of the text that is rendered when there
   /// are no items to display.
   late final TextStyle noItemsTextStyle;
+
+  /// Whether to log errors to the console or not.
+  late final bool logErrors;
 }
 
 /// [ShimmerConfig] class to customize the loading shimmer colors, duration etc.

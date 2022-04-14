@@ -26,7 +26,7 @@ First and foremost, import the widget.
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 ```
 
-You can now add an [`PaginatedItemsBuilder`](https://github.com/rithik-dev/paginated_items_builder/blob/master/lib/src/paginated_items_builder.dart) widget to your widget tree.
+You can now add a [`PaginatedItemsBuilder`](https://github.com/rithik-dev/paginated_items_builder/blob/master/lib/src/paginated_items_builder.dart) widget to your widget tree.
 
 Here, let's consider a list of products.
 
