@@ -36,20 +36,21 @@ class PostsListWithStateHandledExternally extends StatelessWidget {
       child: Scaffold(
         body: PaginatedItemsBuilder<Post>(
           response: _postsCon.postsResponse,
-          fetchPageData: (reset, itemsFetchScope) => _postsCon.updatePosts(
-            reset: reset,
-            // whether to turn all the existing cards into loaders or not.
-            // If true, all the already displayed items will convert into
-            // loaders, and then the new list will be rendered.
+          // whether to turn all the existing cards into loaders or not.
+          // If true, all the already displayed items will convert into
+          // loaders, and then the new list will be rendered.
 
-            // If false, then nothing will change on the screen while the data
-            // is being fetched, when the data arrives, the content in the
-            // cards will replace.
-            showLoaderOnReset:
-                itemsFetchScope == ItemsFetchScope.noItemsRefresh,
-          ),
+          // If false, then nothing will change on the screen while the data
+          // is being fetched, when the data arrives, the content in the
+          // cards will replace.
+          showLoaderOnResetGetter: (itemsFetchScope) => [
+            ItemsFetchScope.noItemsRefresh,
+            ItemsFetchScope.onErrorRefresh,
+            ItemsFetchScope.pullDownToRefresh,
+          ].contains(itemsFetchScope),
+          fetchPageData: (reset) => _postsCon.updatePosts(reset: reset),
           itemBuilder: (context, idx, post) => PostCard(post),
-          loaderItemsCount: 10,
+          loaderItemsCount: 12,
         ),
       ),
     );
@@ -66,7 +67,7 @@ class PostsListWithStateHandledInternally extends StatelessWidget {
   }) : super(key: key);
 
   /// function which calls the API and returns [PaginatedItemsResponse]
-  Future<PaginatedItemsResponse<Post>?> updatePosts(
+  Future<PaginatedItemsResponse<Post>> updatePosts(
     dynamic paginationKey,
   ) async {
     return await PostsRepository.getPosts(startKey: paginationKey);
@@ -78,14 +79,12 @@ class PostsListWithStateHandledInternally extends StatelessWidget {
       child: Scaffold(
         body: PaginationItemsStateHandler<Post>(
           fetchPageData: updatePosts,
-          showLoaderOnResetBuilder: (itemsFetchScope) =>
-              itemsFetchScope == ItemsFetchScope.noItemsRefresh,
           builder: (response, fetchPageData) {
             return PaginatedItemsBuilder<Post>(
               response: response,
               fetchPageData: fetchPageData,
-              itemBuilder: (context, idx, post) => PostCard(post),
-              loaderItemsCount: 10,
+              itemBuilder: (context, _, post) => PostCard(post),
+              loaderItemsCount: 12,
             );
           },
         ),

@@ -5,7 +5,7 @@ import 'package:paginated_items_builder_demo/models/post.dart';
 class PostsRepository {
   const PostsRepository._();
 
-  static Future<PaginatedItemsResponse<Post>?> getPosts({
+  static Future<PaginatedItemsResponse<Post>> getPosts({
     dynamic startKey,
   }) async {
     // use dio or http to call api and get the response. and pass the contents
