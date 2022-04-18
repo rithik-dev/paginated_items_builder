@@ -203,9 +203,9 @@ the `PaginatedItemsBuilder` class.
 Generate a class like shown:
 ```dart
 class MockItems {
-  static dynamic getByType<T>([String? key]) {
-    final typeKey = key ?? T.toString();
-    switch (typeKey) {
+  static dynamic getByType<T>([String? mockItemKey]) {
+    final key = mockItemKey ?? T.toString();
+    switch (key) {
       case 'Category':
         return _category as T;
     }
@@ -233,9 +233,11 @@ PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
         baseColor: Colors.grey[300],
         highlightColor: Colors.grey[200],
     ),
+    // ...and a lot more params
 );
 ```
-... and more
+
+### Supporting multiple themes
 
 The config can be initialized in the MaterialApp's builder property. It is also possible to
 pass different colors for different themes as shown:

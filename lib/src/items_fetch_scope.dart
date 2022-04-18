@@ -4,6 +4,8 @@ import 'paginated_items_builder.dart';
 /// in [PaginatedItemsBuilder] was called.
 enum ItemsFetchScope {
   /// On user's pull down to refresh.
+  ///
+  /// Triggers only if [PaginatedItemsBuilder.disableRefreshIndicator] is false.
   pullDownToRefresh,
 
   /// If no items are present in the list.
@@ -16,6 +18,6 @@ enum ItemsFetchScope {
   /// Will only be triggered if pagination is supported.
   loadMoreData,
 
-  /// In an error occurs, and [resetOnTap] is called from the [errorWidgetBuilder] callback.
+  /// In an error occurs.
   onErrorRefresh,
 }

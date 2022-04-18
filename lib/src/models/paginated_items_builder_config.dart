@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 
-dynamic _getByType<T>([String? key]) => null;
+dynamic _getByType<T>([String? mockItemKey]) => null;
 
 String _noItemsTextGetter(String name) {
   final beforeCapitalLetter = RegExp(r"(?=[A-Z])");
@@ -9,26 +9,28 @@ String _noItemsTextGetter(String name) {
   return "No ${name}s found!";
 }
 
+String _errorTextGetter(dynamic error) => 'Something went wrong!';
+
 /// The config for [PaginatedItemsBuilder].
 class PaginatedItemsBuilderConfig {
   PaginatedItemsBuilderConfig({
     ShimmerConfig? shimmerConfig,
-    dynamic Function<T>([String? key])? mockItemGetter,
-    String Function(String name)? noItemsTextGetter,
+    this.mockItemGetter = _getByType,
+    this.noItemsTextGetter = _noItemsTextGetter,
+    this.errorTextGetter = _errorTextGetter,
     this.noItemsTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 14,
     ),
     this.logErrors = true,
-  })  : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer(),
-        mockItemGetter = mockItemGetter ?? _getByType,
-        noItemsTextGetter = noItemsTextGetter ?? _noItemsTextGetter;
+  }) : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer();
 
   /// Default config
   PaginatedItemsBuilderConfig.defaultConfig() {
     shimmerConfig = ShimmerConfig.defaultShimmer();
     mockItemGetter = _getByType;
     noItemsTextGetter = _noItemsTextGetter;
+    errorTextGetter = _errorTextGetter;
     noItemsTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 14,
@@ -42,13 +44,18 @@ class PaginatedItemsBuilderConfig {
   /// data of type `T`. This calls the [PaginatedItemsBuilder]'s [itemBuilder]
   /// with the mockItem and overlays a shimmer for loading animation.
   ///
+  /// You can also return a widget from this method, then that widget
+  /// will be built in place of the loader.
+  /// The widget is wrapped in an [IgnorePointer] when built to disable any
+  /// onTap gesture listeners.
+  ///
   /// ```dart
   /// class MockItems {
-  ///   static dynamic getMockItemByType<T>([String? key]) {
-  //     final typeKey = key ?? T.toString();
-  //     switch (typeKey) {
+  ///   static dynamic getByType<T>([String? mockItemKey]) {
+  //     final key = mockItemKey ?? T.toString();
+  //     switch (key) {
   //       case 'Post':
-  //         return _post as T;
+  //         return _post;
   //     }
   //   }
   ///
@@ -63,6 +70,9 @@ class PaginatedItemsBuilderConfig {
 
   /// Customize the text that is rendered when there are no items to display.
   late final String Function(String name) noItemsTextGetter;
+
+  /// Customize the text that is rendered when an occurs.
+  late final String Function(dynamic error) errorTextGetter;
 
   /// Customize the style of the text that is rendered when there
   /// are no items to display.

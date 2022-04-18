@@ -15,9 +15,8 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EasyContainer(
-      // Color transparent to see the shimmer not on the card itself, but on
-      // the items inside.
-      color: Colors.transparent,
+      alignment: Alignment.centerLeft,
+      color: Colors.grey[300],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

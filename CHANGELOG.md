@@ -1,3 +1,9 @@
+## [1.2.1] - 18/04/2022
+
+* Added errorTextGetter in config
+* Added customScrollPhysics, bottomLoader param
+* Now, can return a widget from mockItemGetter instead of an object, to directly render that widget...
+
 ## [1.2.0] - 15/04/2022
 
 * Added a new ItemsFetchScope i.e. onErrorRefresh, which comes in play if an error occurs

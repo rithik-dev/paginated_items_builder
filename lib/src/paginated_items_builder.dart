@@ -1,11 +1,12 @@
 import 'dart:developer' as dev;
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 
-/// enum used to check how the list items are to be rendered on the screen.
+/// enum used to check how the items are to be rendered on the screen.
 /// Whether in a list view or a grid view.
 enum ItemsDisplayType {
   /// Render the items in a list view
@@ -23,26 +24,15 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     required this.fetchPageData,
     required this.response,
     required this.itemBuilder,
-    this.itemsDisplayType = ItemsDisplayType.list,
-    this.shrinkWrap = false,
-    this.reverse = false,
-    this.clipBehaviour = Clip.hardEdge,
     this.cacheExtent,
-    this.disableRefreshIndicator = false,
     this.logError,
-    this.paginate = true,
-    this.showRefreshIcon = true,
-    this.neverScrollablePhysicsOnShrinkWrap = true,
-    this.loader = const Center(
-      child: CircularProgressIndicator.adaptive(),
-    ),
-    this.loaderItemsCount = 10,
+    this.customScrollPhysics,
     this.scrollController,
     this.gridDelegate,
     this.padding,
-    this.emptyTextBuilder,
-    this.emptyWidgetBuilder,
-    this.errorTextBuilder,
+    this.noItemsTextGetter,
+    this.noItemsWidgetBuilder,
+    this.errorTextGetter,
     this.errorWidgetBuilder,
     this.showLoaderOnResetGetter,
     this.maxLength,
@@ -53,14 +43,30 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.gridMainAxisSpacing,
     this.gridCrossAxisSpacing,
     this.gridChildAspectRatio,
-    this.scrollDirection = Axis.vertical,
     this.primary,
     this.mockItemKey,
     this.gridSemanticChildCount,
+    this.restorationId,
+    this.loader = const Center(
+      child: CircularProgressIndicator.adaptive(),
+    ),
+    this.bottomLoader = const Center(
+      child: CircularProgressIndicator.adaptive(),
+    ),
+    this.paginate = true,
+    this.showRefreshIcon = true,
+    this.neverScrollablePhysicsOnShrinkWrap = true,
+    this.itemsDisplayType = ItemsDisplayType.list,
+    this.shrinkWrap = false,
+    this.reverse = false,
+    this.clipBehaviour = Clip.hardEdge,
+    this.disableRefreshIndicator = false,
+    this.loaderItemsCount = 10,
+    this.scrollDirection = Axis.vertical,
+    this.ignoreMockItemGetter = false,
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
     this.addSemanticIndexes = true,
-    this.restorationId,
     this.dragStartBehavior = DragStartBehavior.start,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
   }) : super(key: key);
@@ -142,49 +148,51 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// Hence, if true, it overrides the [shrinkWrap] property as [shrinkWrap]
   /// should be true if the [PaginatedItemsBuilder] is inside another scrollable
   /// widget.
+  ///
+  /// Has no effect if [customScrollPhysics] is not null.
   final bool neverScrollablePhysicsOnShrinkWrap;
 
   /// The refresh icon builder. [showRefreshIcon] is ignored if [refreshIconBuilder] is not null;
   /// The parameter provides a function which should be passed to your custom widget's
   /// gesture handler to trigger refreshing the items.
-  final Widget Function(void Function() onTap)? refreshIconBuilder;
+  final Widget Function(void Function() refreshOnTap)? refreshIconBuilder;
 
   /// The text to show if no items are present.
   ///
   /// The value provided is the [mockItemKey].
   /// If [mockItemKey] is null, then [T] is passed.
   ///
-  /// Has no effect if [emptyWidgetBuilder] is not null.
-  final String? Function(String? typeKey)? emptyTextBuilder;
+  /// Has no effect if [noItemsWidgetBuilder] is not null.
+  final String? Function(String? typeKey)? noItemsTextGetter;
 
   /// The widget to display if no items are there to display.
   ///
   /// The first param is the typeKey, i.e. [mockItemKey]
   /// if [mockItemKey] is not null, else [T] is passed.
   ///
-  /// The 2nd param is [onTap] which should be passed to the refresh button
+  /// The 2nd param is [refreshOnTap] which should be passed to the refresh button
   /// to refresh the contents.
   ///
-  /// [emptyTextBuilder] has no effect if [emptyWidgetBuilder] is not null.
-  final Widget Function(String? typeKey, void Function() onTap)?
-      emptyWidgetBuilder;
+  /// [noItemsTextGetter] has no effect if [noItemsWidgetBuilder] is not null.
+  final Widget Function(String? typeKey, void Function() refreshOnTap)?
+      noItemsWidgetBuilder;
 
   /// The text to show if an error occurs.
   ///
   /// The value provided is the error occurred.
   ///
   /// Has no effect if [errorWidgetBuilder] is not null.
-  final String? Function(dynamic error)? errorTextBuilder;
+  final String? Function(dynamic error)? errorTextGetter;
 
   /// The widget to display if an errors.
   ///
   /// The first param is the error occurred.
   ///
-  /// The 2nd param is [onTap] which should be passed to the refresh button
+  /// The 2nd param is [refreshOnTap] which should be passed to the refresh button
   /// to refresh the contents.
   ///
-  /// [errorTextBuilder] has no effect if [errorWidgetBuilder] is not null.
-  final Widget Function(dynamic error, void Function() onTap)?
+  /// [errorTextGetter] has no effect if [errorWidgetBuilder] is not null.
+  final Widget Function(dynamic error, void Function() refreshOnTap)?
       errorWidgetBuilder;
 
   /// If no items are there to display, shows a refresh icon to again call the
@@ -205,8 +213,19 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// Whether to display items in a list view or grid view.
   final ItemsDisplayType itemsDisplayType;
 
-  /// The loader to render if [mockItem] not found from [PaginatedItemsBuilderConfig.mockItemGetter].
+  /// If true, then [mockItemGetter] will not be called whatsoever, and
+  /// mock item remains null...
+  final bool ignoreMockItemGetter;
+
+  /// The full-screen loader to render if [mockItem] not
+  /// found from [PaginatedItemsBuilderConfig.mockItemGetter] or
+  /// [ignoreMockItemGetter] is true.
   final Widget loader;
+
+  /// The bottom-loader to render if [mockItem] not
+  /// found from [PaginatedItemsBuilderConfig.mockItemGetter] or
+  /// [ignoreMockItemGetter] is true.
+  final Widget bottomLoader;
 
   /// Whether to switch all the cards to their respective loaders when [reset] is true,
   /// i.e. if the user pulls down to refresh, or no items were found...
@@ -227,8 +246,69 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// The loader will always show on [ItemsFetchScope.initialLoad], no matter what.
   final bool Function(ItemsFetchScope itemsFetchScope)? showLoaderOnResetGetter;
 
+  /// How the scroll view should respond to user input.
+  ///
+  /// If not null, the refresh indicator might not work as expected.
+  ///
+  /// If you want to use your own refresh indicator outside of this widget,
+  /// pass [disableRefreshIndicator] as true.
+  ///
+  /// If not null, [neverScrollablePhysicsOnShrinkWrap] is ignored.
+  final ScrollPhysics? customScrollPhysics;
+
   /// config
   static PaginatedItemsBuilderConfig? config;
+
+  // -------- list-specific params -------- //
+
+  /// The gap between concurrent list items.
+  /// Has no effect if [listSeparatorWidget] is not null.
+  final double? listItemsGap;
+
+  /// Separator for items in a list view.
+  final Widget? listSeparatorWidget;
+
+  // -------- grid-specific params -------- //
+
+  /// The number of children that will contribute semantic information.
+  ///
+  /// Some subtypes of [ScrollView] can infer this value automatically. For
+  /// example [ListView] will use the number of widgets in the child list,
+  /// while the [ListView.separated] constructor will use half that amount.
+  ///
+  /// Since internally for list items, [ListView.separated] is being used,
+  /// hence, this value is not available for list items.
+  ///
+  /// For [CustomScrollView] and other types which do not receive a builder
+  /// or list of widgets, the child count must be explicitly provided. If the
+  /// number is unknown or unbounded this should be left unset or set to null.
+  ///
+  /// See also:
+  ///
+  ///  * [SemanticsConfiguration.scrollChildCount], the corresponding semantics property.
+  final int? gridSemanticChildCount;
+
+  /// The grid's delegate, controlling the layout of tiles in a grid.
+  /// Used if [itemsDisplayType] is [ItemsDisplayType.grid].
+  ///
+  /// Defaults to [SliverGridDelegateWithFixedCrossAxisCount].
+  final SliverGridDelegate? gridDelegate;
+
+  /// The grid axis count for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
+  /// Has no effect if [gridDelegate] is not null.
+  final int? gridCrossAxisCount;
+
+  /// The grid main axis spacing for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
+  /// Has no effect if [gridDelegate] is not null.
+  final double? gridMainAxisSpacing;
+
+  /// The grid cross axis spacing for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
+  /// Has no effect if [gridDelegate] is not null.
+  final double? gridCrossAxisSpacing;
+
+  /// The grid child aspect ratio for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
+  /// Has no effect if [gridDelegate] is not null.
+  final double? gridChildAspectRatio;
 
   // -------- params that are passed directly to the list/grid view -------- //
 
@@ -369,54 +449,6 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// will dismiss the keyboard automatically.
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
 
-  // -------- list-specific params -------- //
-
-  /// The gap between concurrent list items.
-  /// Has no effect if [listSeparatorWidget] is not null.
-  final double? listItemsGap;
-
-  /// Separator for items in a list view.
-  final Widget? listSeparatorWidget;
-
-  // -------- grid-specific params -------- //
-
-  /// The number of children that will contribute semantic information.
-  ///
-  /// Some subtypes of [ScrollView] can infer this value automatically. For
-  /// example [ListView] will use the number of widgets in the child list,
-  /// while the [ListView.separated] constructor will use half that amount.
-  ///
-  /// For [CustomScrollView] and other types which do not receive a builder
-  /// or list of widgets, the child count must be explicitly provided. If the
-  /// number is unknown or unbounded this should be left unset or set to null.
-  ///
-  /// See also:
-  ///
-  ///  * [SemanticsConfiguration.scrollChildCount], the corresponding semantics property.
-  final int? gridSemanticChildCount;
-
-  /// The grid's delegate, controlling the layout of tiles in a grid.
-  /// Used if [itemsDisplayType] is [ItemsDisplayType.grid].
-  ///
-  /// Defaults to [SliverGridDelegateWithFixedCrossAxisCount].
-  final SliverGridDelegate? gridDelegate;
-
-  /// The grid axis count for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
-  /// Has no effect if [gridDelegate] is not null.
-  final int? gridCrossAxisCount;
-
-  /// The grid main axis spacing for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
-  /// Has no effect if [gridDelegate] is not null.
-  final double? gridMainAxisSpacing;
-
-  /// The grid cross axis spacing for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
-  /// Has no effect if [gridDelegate] is not null.
-  final double? gridCrossAxisSpacing;
-
-  /// The grid child aspect ratio for the delegate [SliverGridDelegateWithFixedCrossAxisCount].
-  /// Has no effect if [gridDelegate] is not null.
-  final double? gridChildAspectRatio;
-
   @override
   _PaginatedItemsBuilderState<T> createState() =>
       _PaginatedItemsBuilderState<T>();
@@ -431,10 +463,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   late bool showMainLoader;
   late bool showBottomLoader;
-  late ScrollPhysics? scrollPhysics;
   late int itemCount;
-  late T? mockItem;
-
+  late ScrollPhysics scrollPhysics;
+  dynamic mockItem;
   late PaginatedItemsBuilderConfig config;
 
   Future<void> _fetchData({
@@ -490,7 +521,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   Widget _loaderBuilder([int? bottomLoaderIdx]) {
     Widget _buildMockItemLoader() {
       final builtMockItem = IgnorePointer(
-        child: widget.itemBuilder(context, 0, mockItem!),
+        child: mockItem is Widget
+            ? mockItem!
+            : widget.itemBuilder(context, 0, mockItem!),
       );
 
       if (bottomLoaderIdx == null) {
@@ -512,28 +545,25 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       }
     }
 
-    return mockItem == null ? widget.loader : _buildMockItemLoader();
+    return mockItem == null
+        ? (bottomLoaderIdx == null ? widget.loader : widget.bottomLoader)
+        : _buildMockItemLoader();
   }
 
-  Widget _buildRefreshIcon(void Function() onTap) {
-    final customRefreshIcon = widget.refreshIconBuilder?.call(onTap);
-
-    if (customRefreshIcon != null) {
-      return customRefreshIcon;
+  Widget _buildRefreshIcon(void Function() refreshOnTap) {
+    if (widget.refreshIconBuilder != null) {
+      return widget.refreshIconBuilder!(refreshOnTap);
     } else if (widget.showRefreshIcon) {
       return IconButton(
-        icon: Icon(
-          Icons.refresh,
-          color: Theme.of(context).colorScheme.secondary,
-        ),
-        onPressed: onTap,
+        icon: const Icon(Icons.refresh),
+        onPressed: refreshOnTap,
       );
     } else {
       return const SizedBox.shrink();
     }
   }
 
-  Widget _emptyWidget() {
+  Widget _noItemsWidget() {
     void onTap() {
       _fetchData(
         reset: true,
@@ -543,8 +573,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     final itemName = widget.mockItemKey ?? T.toString();
 
-    if (widget.emptyWidgetBuilder != null) {
-      return widget.emptyWidgetBuilder!(itemName, onTap);
+    if (widget.noItemsWidgetBuilder != null) {
+      return widget.noItemsWidgetBuilder!(itemName, onTap);
     }
 
     return Center(
@@ -552,7 +582,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            widget.emptyTextBuilder?.call(itemName) ??
+            widget.noItemsTextGetter?.call(itemName) ??
                 config.noItemsTextGetter(itemName),
             style: config.noItemsTextStyle,
           ),
@@ -579,7 +609,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            widget.errorTextBuilder?.call(_error) ?? 'Something went wrong!',
+            widget.errorTextGetter?.call(_error) ??
+                config.errorTextGetter(_error),
             style: config.noItemsTextStyle,
           ),
           _buildRefreshIcon(onTap),
@@ -588,34 +619,46 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     );
   }
 
-  @override
-  void initState() {
+  void _initState() {
     PaginatedItemsBuilder.config ??=
         PaginatedItemsBuilderConfig.defaultConfig();
 
     config = PaginatedItemsBuilder.config!;
 
-    mockItem = widget.mockItemKey == null
-        ? config.mockItemGetter<T>()
-        : config.mockItemGetter(widget.mockItemKey);
+    if (widget.ignoreMockItemGetter) {
+      mockItem = null;
+    } else {
+      mockItem = widget.mockItemKey == null
+          ? config.mockItemGetter<T>()
+          : config.mockItemGetter(widget.mockItemKey);
+    }
 
-    if (widget.shrinkWrap && widget.neverScrollablePhysicsOnShrinkWrap) {
+    if (widget.customScrollPhysics != null) {
+      scrollPhysics = widget.customScrollPhysics!;
+    } else if (widget.shrinkWrap && widget.neverScrollablePhysicsOnShrinkWrap) {
       scrollPhysics = const NeverScrollableScrollPhysics();
     } else {
       scrollPhysics = const AlwaysScrollableScrollPhysics();
     }
+  }
 
+  @override
+  void initState() {
+    _initState();
     _fetchData(itemsFetchScope: ItemsFetchScope.initialLoad);
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // will display bottom loader, as when built,
-    // calls fetchData to fetch more data..
+    // init some variables used in initState on every build,
+    // so don't have to hot-restart on every change during development...
+    if (kDebugMode) _initState();
+
+    // bottom loader is always built, as when rendered in view,
+    // calls _fetchData to fetch more data..
     showBottomLoader =
-        (widget.paginate && (widget.response?.hasMoreData ?? false));
+        widget.paginate && (widget.response?.hasMoreData ?? false);
 
     // set: itemCount
     (() {
@@ -640,7 +683,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     } else if (hasError) {
       return _errorWidget();
     } else if (widget.response?.items?.isEmpty ?? false) {
-      return _emptyWidget();
+      return _noItemsWidget();
     } else if (widget.disableRefreshIndicator ||
         widget.shrinkWrap ||
         widget.scrollDirection == Axis.horizontal) {
