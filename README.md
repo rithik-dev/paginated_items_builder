@@ -207,7 +207,9 @@ class MockItems {
     final key = mockItemKey ?? T.toString();
     switch (key) {
       case 'Category':
-        return _category as T;
+        // a widget can also be returned from here, instead of an object...
+        // if a widget is returned, then widget is rendered directly...
+        return _category;
     }
   }
 

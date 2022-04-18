@@ -1,3 +1,7 @@
+## [1.2.1+1] - 18/04/2022
+
+* Updated README.md
+
 ## [1.2.1] - 18/04/2022
 
 * Added errorTextGetter in config
