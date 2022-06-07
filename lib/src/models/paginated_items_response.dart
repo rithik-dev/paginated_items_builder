@@ -46,6 +46,8 @@ class PaginatedItemsResponse<T> {
 
   /// update a specific item with uid, or add if does not exists according to
   /// [addIfDoesNotExist].
+  ///
+  /// If [item] is null, then the item is removed.
   void updateItem(
     String itemUid,
     T? item, {
