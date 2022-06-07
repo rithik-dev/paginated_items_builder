@@ -19,7 +19,7 @@ class PaginatedItemsBuilderConfig {
     this.customScrollPhysics = ConfigDefaults.customScrollPhysics,
     this.padding = ConfigDefaults.padding,
   }) {
-    shimmerConfig = shimmerConfig ?? ShimmerConfig();
+    this.shimmerConfig = shimmerConfig ?? ShimmerConfig();
   }
 
   /// Create a function and pass the reference to this.

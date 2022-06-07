@@ -1,3 +1,7 @@
+## [1.2.3] - 07/06/2022 
+
+* Fixed ShimmerConfig initialization error
+
 ## [1.2.2] - 07/06/2022
 
 * Fixed linter warnings
