@@ -1,3 +1,9 @@
+## [1.2.2] - 07/06/2022
+
+* Fixed linter warnings
+* Updated dependencies
+* Updated config.. (Added more elements in config)
+
 ## [1.2.1+1] - 18/04/2022
 
 * Updated README.md

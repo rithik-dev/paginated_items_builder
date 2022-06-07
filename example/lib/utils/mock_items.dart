@@ -2,7 +2,7 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 import 'package:paginated_items_builder_demo/models/post.dart';
 
 class MockItems {
-  /// should return either an object of related type,
+  /// should return either an object of related type [T],
   /// or a widget.
   ///
   /// If an object is returned, then this item will be passed to the
@@ -11,7 +11,9 @@ class MockItems {
   ///
   /// But if a widget is returned, then the widget is rendered directly.
   ///
-  /// It is rendered inside an [IgnorePointer] to disable any onTap listeners.
+  /// It is by default rendered inside an [IgnorePointer] to disable any onTap listeners.
+  ///
+  /// However, this can be changed by passing [PaginatedItemsBuilder.disableLoaderOnTaps] as false.
   static dynamic getByType<T>([String? mockItemKey]) {
     final key = mockItemKey ?? T.toString();
     switch (key) {

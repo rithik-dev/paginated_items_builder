@@ -1,41 +1,25 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ErrorWidgetBuilder;
 import 'package:paginated_items_builder/paginated_items_builder.dart';
-
-dynamic _getByType<T>([String? mockItemKey]) => null;
-
-String _noItemsTextGetter(String name) {
-  final beforeCapitalLetter = RegExp(r"(?=[A-Z])");
-  name = name.split(beforeCapitalLetter).map((e) => e.toLowerCase()).join(' ');
-  return "No ${name}s found!";
-}
-
-String _errorTextGetter(dynamic error) => 'Something went wrong!';
+import 'package:paginated_items_builder/src/config/config_defaults.dart';
+import 'package:paginated_items_builder/src/type_definitions.dart';
 
 /// The config for [PaginatedItemsBuilder].
 class PaginatedItemsBuilderConfig {
   PaginatedItemsBuilderConfig({
     ShimmerConfig? shimmerConfig,
-    this.mockItemGetter = _getByType,
-    this.noItemsTextGetter = _noItemsTextGetter,
-    this.errorTextGetter = _errorTextGetter,
-    this.noItemsTextStyle = const TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 14,
-    ),
-    this.logErrors = true,
-  }) : shimmerConfig = shimmerConfig ?? ShimmerConfig.defaultShimmer();
-
-  /// Default config
-  PaginatedItemsBuilderConfig.defaultConfig() {
-    shimmerConfig = ShimmerConfig.defaultShimmer();
-    mockItemGetter = _getByType;
-    noItemsTextGetter = _noItemsTextGetter;
-    errorTextGetter = _errorTextGetter;
-    noItemsTextStyle = const TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 14,
-    );
-    logErrors = true;
+    this.mockItemGetter = ConfigDefaults.getByType,
+    this.noItemsTextGetter = ConfigDefaults.noItemsTextGetter,
+    this.errorTextGetter = ConfigDefaults.errorTextGetter,
+    this.showLoaderOnResetGetter = ConfigDefaults.showLoaderOnResetGetter,
+    this.noItemsTextStyle = ConfigDefaults.defaultTextStyle,
+    this.errorTextStyle = ConfigDefaults.defaultTextStyle,
+    this.loader = ConfigDefaults.defaultLoader,
+    this.bottomLoader = ConfigDefaults.defaultLoader,
+    this.logErrors = ConfigDefaults.logErrors,
+    this.customScrollPhysics = ConfigDefaults.customScrollPhysics,
+    this.padding = ConfigDefaults.padding,
+  }) {
+    shimmerConfig = shimmerConfig ?? ShimmerConfig();
   }
 
   /// Create a function and pass the reference to this.
@@ -46,8 +30,13 @@ class PaginatedItemsBuilderConfig {
   ///
   /// You can also return a widget from this method, then that widget
   /// will be built in place of the loader.
+  ///
   /// The widget is wrapped in an [IgnorePointer] when built to disable any
   /// onTap gesture listeners.
+  ///
+  /// However, this can be changed by passing
+  /// [PaginatedItemsBuilder.disableLoaderOnTaps] as false,
+  /// if you want to have loader onTap handlers...
   ///
   /// ```dart
   /// class MockItems {
@@ -68,33 +57,59 @@ class PaginatedItemsBuilderConfig {
   /// color, or the duration.
   late final ShimmerConfig shimmerConfig;
 
-  /// Customize the text that is rendered when there are no items to display.
-  late final String Function(String name) noItemsTextGetter;
+  /// {@macro noItemsTextGetter}
+  late final NoItemsTextGetter noItemsTextGetter;
 
-  /// Customize the text that is rendered when an occurs.
-  late final String Function(dynamic error) errorTextGetter;
+  /// {@macro noItemsWidgetBuilder}
+  late final NoItemsWidgetBuilder noItemsWidgetBuilder;
 
-  /// Customize the style of the text that is rendered when there
-  /// are no items to display.
+  /// {@macro noItemsTextStyle}
   late final TextStyle noItemsTextStyle;
 
-  /// Whether to log errors to the console or not.
+  /// {@macro errorTextGetter}
+  late final ErrorTextGetter errorTextGetter;
+
+  /// {@macro errorWidgetBuilder}
+  late final ErrorWidgetBuilder errorWidgetBuilder;
+
+  /// {@macro errorTextStyle}
+  late final TextStyle errorTextStyle;
+
+  /// {@macro loader}
+  late final Widget loader;
+
+  /// {@macro bottomLoader}
+  late final Widget bottomLoader;
+
+  /// {@macro showLoaderOnResetGetter}
+  late final ShowLoaderOnResetGetter showLoaderOnResetGetter;
+
+  /// {@macro logErrors}
   late final bool logErrors;
+
+  /// {@macro customScrollPhysics}
+  late final ScrollPhysics? customScrollPhysics;
+
+  /// {@macro padding}
+  late final EdgeInsets? padding;
+
+  /// {@macro refreshIconBuilder}
+  late final RefreshIconBuilder? refreshIconBuilder;
 }
 
 /// [ShimmerConfig] class to customize the loading shimmer colors, duration etc.
 class ShimmerConfig {
   /// The shimmer's base color. Defaults to Colors.grey[300].
-  late final Color baseColor;
+  final Color baseColor;
 
   /// The shimmer's highlight color. Defaults to Colors.grey[200].
-  late final Color highlightColor;
+  final Color highlightColor;
 
   /// The shimmer's duration. Defaults to 800ms.
-  late final Duration duration;
+  final Duration duration;
 
   /// The shimmer's direction. Defaults to [ShimmerDirection.ltr].
-  late final ShimmerDirection direction;
+  final ShimmerDirection direction;
 
   static final _defaultBaseColor = Colors.grey[300]!;
   static final _defaultHighlightColor = Colors.grey[200]!;
@@ -108,12 +123,4 @@ class ShimmerConfig {
     this.duration = _defaultDuration,
   })  : baseColor = baseColor ?? _defaultBaseColor,
         highlightColor = highlightColor ?? _defaultHighlightColor;
-
-  /// default
-  ShimmerConfig.defaultShimmer() {
-    baseColor = _defaultBaseColor;
-    highlightColor = _defaultHighlightColor;
-    direction = _defaultDirection;
-    duration = _defaultDuration;
-  }
 }

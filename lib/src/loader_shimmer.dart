@@ -41,8 +41,8 @@ class LoaderShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _config = PaginatedItemsBuilder.config?.shimmerConfig;
-    final shimmerConfig = _config ?? ShimmerConfig.defaultShimmer();
+    final config = PaginatedItemsBuilder.config?.shimmerConfig;
+    final shimmerConfig = config ?? ShimmerConfig();
 
     if (isLoading) {
       return Shimmer.fromColors(
