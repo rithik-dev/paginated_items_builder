@@ -9,8 +9,8 @@ class HomeScreen extends StatelessWidget {
   static const id = 'HomeScreen';
 
   const HomeScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,18 +24,16 @@ class HomeScreen extends StatelessWidget {
 //******************************************************************
 
 class PostsListWithStateHandledExternally extends StatelessWidget {
-  const PostsListWithStateHandledExternally({
-    Key? key,
-  }) : super(key: key);
+  const PostsListWithStateHandledExternally({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final _postsCon = PostsController.of(context);
+    final postsCon = PostsController.of(context);
 
     return SafeArea(
       child: Scaffold(
         body: PaginatedItemsBuilder<Post>(
-          response: _postsCon.postsResponse,
+          response: postsCon.postsResponse,
           // whether to turn all the existing cards into loaders or not.
           // If true, all the already displayed items will convert into
           // loaders, and then the new list will be rendered.
@@ -48,7 +46,7 @@ class PostsListWithStateHandledExternally extends StatelessWidget {
             ItemsFetchScope.onErrorRefresh,
             ItemsFetchScope.pullDownToRefresh,
           ].contains(itemsFetchScope),
-          fetchPageData: (reset) => _postsCon.updatePosts(reset: reset),
+          fetchPageData: (reset) => postsCon.updatePosts(reset: reset),
           itemBuilder: (context, idx, post) => PostCard(post),
           loaderItemsCount: 12,
         ),
@@ -62,9 +60,7 @@ class PostsListWithStateHandledExternally extends StatelessWidget {
 //******************************************************************
 
 class PostsListWithStateHandledInternally extends StatelessWidget {
-  const PostsListWithStateHandledInternally({
-    Key? key,
-  }) : super(key: key);
+  const PostsListWithStateHandledInternally({super.key});
 
   /// function which calls the API and returns [PaginatedItemsResponse]
   Future<PaginatedItemsResponse<Post>> updatePosts(

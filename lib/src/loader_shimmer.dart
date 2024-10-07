@@ -30,14 +30,14 @@ class LoaderShimmer extends StatelessWidget {
   final Widget child;
 
   const LoaderShimmer({
-    Key? key,
+    super.key,
     required this.child,
     this.baseColor,
     this.highlightColor,
     this.duration,
     this.direction,
     this.isLoading = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

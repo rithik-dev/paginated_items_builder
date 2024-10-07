@@ -21,7 +21,7 @@ enum ItemsDisplayType {
 /// as parent if state is not handled externally.
 class PaginatedItemsBuilder<T> extends StatefulWidget {
   const PaginatedItemsBuilder({
-    Key? key,
+    super.key,
     required this.fetchPageData,
     required this.response,
     required this.itemBuilder,
@@ -69,7 +69,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.addSemanticIndexes = true,
     this.dragStartBehavior = DragStartBehavior.start,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
-  }) : super(key: key);
+  });
 
   /// This is the controller function that should handle fetching the list
   /// and updating in the state.
@@ -614,7 +614,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   Widget _loaderBuilder([int? bottomLoaderIdx]) {
-    Widget _buildMockItemLoader() {
+    Widget buildMockItemLoader() {
       final mockItemWidget = mockItem is Widget
           ? mockItem!
           : widget.itemBuilder(context, 0, mockItem!);
@@ -647,7 +647,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     return mockItem == null
         ? (bottomLoaderIdx == null ? loader : bottomLoader)
-        : _buildMockItemLoader();
+        : buildMockItemLoader();
   }
 
   Widget _buildRefreshIcon(VoidCallback refreshOnTap) {
@@ -800,6 +800,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     }
   }
 
+  // TODO: add slivers support
   Widget _buildItems() {
     switch (widget.itemsDisplayType) {
       case ItemsDisplayType.list:

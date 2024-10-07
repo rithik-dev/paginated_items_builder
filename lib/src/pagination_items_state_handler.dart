@@ -25,10 +25,10 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
   ) builder;
 
   const PaginationItemsStateHandler({
-    Key? key,
+    super.key,
     required this.fetchPageData,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   State<PaginationItemsStateHandler<T>> createState() =>

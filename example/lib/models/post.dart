@@ -12,11 +12,11 @@ class Post {
   }
 
   Map<String, dynamic> toJson() {
-    final _json = <String, dynamic>{};
-    _json['userId'] = userId;
-    _json['id'] = id;
-    _json['title'] = title;
-    _json['body'] = body;
-    return _json;
+    final json = <String, dynamic>{};
+    json['userId'] = userId;
+    json['id'] = id;
+    json['title'] = title;
+    json['body'] = body;
+    return json;
   }
 }
