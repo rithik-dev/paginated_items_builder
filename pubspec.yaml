@@ -2,18 +2,24 @@ name: paginated_items_builder
 description: Easier to display items in a list/grid view from your controllers directly or handling state internally with support for pagination.
 version: 1.2.3
 homepage: https://github.com/rithik-dev/paginated_items_builder
+repository: https://github.com/rithik-dev/paginated_items_builder
+issue_tracker: https://github.com/rithik-dev/paginated_items_builder/issues
+# documentation: https://github.com/rithik-dev/paginated_items_builder/blob/master/README.md
+topics:
+  - flutter
+  - widget
+  - pagination
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
-  flutter: ">=1.17.0"
+  # constraints from shimmer dependency
+  sdk: ">=2.17.0 <4.0.0"
+  flutter: ">=1.9.1"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  shimmer: ^2.0.0
+  shimmer: ^3.0.0
 
 dev_dependencies:
-  flutter_lints: ^2.0.1
-
-flutter:
+  flutter_lints: ^5.0.0
