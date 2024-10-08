@@ -603,9 +603,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     if (!showMainLoader && widget.response?.items != null) {
       // bottom loader
       // passing index only for bottom loader, to update [_lastLoaderBuiltIndex]
-      if (widget.response!.items!.length <= index) return _loaderBuilder(index);
+      if (widget.response!.items.length <= index) return _loaderBuilder(index);
 
-      final item = widget.response!.items![index];
+      final item = widget.response!.items[index];
       return widget.itemBuilder(context, index, item);
     } else {
       // initial loader
@@ -758,15 +758,14 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     // bottom loader is always built, as when rendered in view,
     // calls _fetchData to fetch more data..
-    showBottomLoader =
-        widget.paginate && (widget.response?.hasMoreData ?? false);
+    showBottomLoader = widget.paginate && (widget.response?.hasMore ?? false);
 
     // set: itemCount
     (() {
       int itemsLen = widget.loaderItemsCount;
       if (!showMainLoader) {
-        if (widget.response?.items?.length != null) {
-          itemsLen = widget.response!.items!.length;
+        if (widget.response?.items.length != null) {
+          itemsLen = widget.response!.items.length;
         }
         itemsLen += showBottomLoader ? 1 : 0;
       }
@@ -783,7 +782,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       }
     } else if (hasError) {
       return _errorWidget();
-    } else if (widget.response?.items?.isEmpty ?? false) {
+    } else if (widget.response?.items.isEmpty ?? false) {
       return _noItemsWidget();
     } else if (widget.disableRefreshIndicator ||
         widget.shrinkWrap ||
