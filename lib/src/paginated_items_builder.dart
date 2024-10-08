@@ -69,6 +69,8 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.addSemanticIndexes = true,
     this.dragStartBehavior = DragStartBehavior.start,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.hitTestBehavior = HitTestBehavior.opaque,
+    this.findChildIndexCallback,
   });
 
   /// This is the controller function that should handle fetching the list
@@ -436,6 +438,13 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// an (implicit) scroll action.
   final double? cacheExtent;
 
+  /// Defines the behavior of gesture detector used in this [Scrollable].
+  /// This defaults to [HitTestBehavior.opaque] which means it prevents targets behind this [Scrollable] from receiving events.
+  /// Defaults to [HitTestBehavior.opaque].
+  final HitTestBehavior hitTestBehavior;
+
+  final ChildIndexGetter? findChildIndexCallback;
+
   /// The content will be clipped (or not) according to this option.
   ///
   /// See the enum Clip for details of all possible options and
@@ -603,9 +612,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     if (!showMainLoader && widget.response?.items != null) {
       // bottom loader
       // passing index only for bottom loader, to update [_lastLoaderBuiltIndex]
-      if (widget.response!.items!.length <= index) return _loaderBuilder(index);
+      if (widget.response!.items.length <= index) return _loaderBuilder(index);
 
-      final item = widget.response!.items![index];
+      final item = widget.response!.items[index];
       return widget.itemBuilder(context, index, item);
     } else {
       // initial loader
@@ -758,15 +767,14 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     // bottom loader is always built, as when rendered in view,
     // calls _fetchData to fetch more data..
-    showBottomLoader =
-        widget.paginate && (widget.response?.hasMoreData ?? false);
+    showBottomLoader = widget.paginate && (widget.response?.hasMore ?? false);
 
     // set: itemCount
     (() {
       int itemsLen = widget.loaderItemsCount;
       if (!showMainLoader) {
-        if (widget.response?.items?.length != null) {
-          itemsLen = widget.response!.items!.length;
+        if (widget.response?.items.length != null) {
+          itemsLen = widget.response!.items.length;
         }
         itemsLen += showBottomLoader ? 1 : 0;
       }
@@ -783,7 +791,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       }
     } else if (hasError) {
       return _errorWidget();
-    } else if (widget.response?.items?.isEmpty ?? false) {
+    } else if (widget.response?.items.isEmpty ?? false) {
       return _noItemsWidget();
     } else if (widget.disableRefreshIndicator ||
         widget.shrinkWrap ||
@@ -826,6 +834,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
       cacheExtent: widget.cacheExtent,
+      hitTestBehavior: widget.hitTestBehavior,
+      findChildIndexCallback: widget.findChildIndexCallback,
       itemBuilder: _itemBuilder,
       padding: widget.padding ?? config.padding,
       separatorBuilder: (_, __) =>
@@ -855,6 +865,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
       cacheExtent: widget.cacheExtent,
+      hitTestBehavior: widget.hitTestBehavior,
+      findChildIndexCallback: widget.findChildIndexCallback,
       itemBuilder: _itemBuilder,
       gridDelegate: widget.gridDelegate ??
           SliverGridDelegateWithFixedCrossAxisCount(

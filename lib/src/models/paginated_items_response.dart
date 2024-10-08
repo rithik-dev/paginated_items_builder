@@ -1,106 +1,248 @@
 import 'dart:developer' as dev;
 
-/// The response object that carries the list of items and handles pagination
-/// internally. The [paginationKey] is optional and can be of any type.
-/// If not passed, it is assumed that the API does not support pagination.
-///
-/// The [idGetter] should be passed when receiving the response from the API, it
-/// is required for functions like `updateItem`, `findByUid`
-/// and avoiding duplication of items in list (compares id).
+extension PaginationModelExtension<T> on PaginatedItemsResponse<T>? {
+  // do not call this like response?.update, call it like response.update...
+  PaginatedItemsResponse<T> update(
+    PaginatedItemsResponse<T> newResponse, {
+    bool reset = false,
+  }) {
+    return reset || this == null ? newResponse : this!._update(newResponse);
+  }
+}
+
 class PaginatedItemsResponse<T> {
-  /// constructor
-  PaginatedItemsResponse({
-    String Function(T)? idGetter,
-    Iterable<T>? listItems,
-    dynamic paginationKey,
-  }) {
-    _idGetterFn ??= idGetter;
-    _update(listItems, paginationKey);
-  }
-
-  /// List of items of type [T]
-  List<T>? items;
-
-  /// The pagination key. Can be null.
   dynamic paginationKey;
+  List<T> data;
+  int itemsPerPage;
+  final String Function(T) idGetter;
+  final dynamic Function(T) _paginationKeyGetter;
 
-  /// ID getter for the object of type [T].
-  String Function(T)? _idGetterFn;
+  List<T> get items => data;
 
-  /// If pagination supported, check if there is more data that can be loaded.
-  bool get hasMoreData => paginationKey != null;
+  dynamic getPaginationKeyForItem(T item) => _paginationKeyGetter(item);
 
-  /// True if [items] is not null.
-  bool get hasData => items != null;
+  dynamic getPaginationKeyForItemAtIndex(int index) =>
+      getPaginationKeyForItem(data[index]);
 
-  /// Find an object by [id].
-  // ignore: body_might_complete_normally_nullable
-  T? findByUid(String id) {
-    final idx = items?.indexWhere((e) => id == _idGetterFn!(e));
-    if (idx != null && idx != -1) return items?[idx];
-  }
-
-  T? operator [](int index) => items?[index];
-
-  void operator []=(int index, T value) => items?[index] = value;
-
-  /// update a specific item with uid, or add if does not exists according to
-  /// [addIfDoesNotExist].
-  ///
-  /// If [item] is null, then the item is removed.
-  void updateItem(
-    String itemUid,
-    T? item, {
-    bool addIfDoesNotExist = false,
+  static bool _calculateHasMore({
+    required int dataLength,
+    required int itemsPerPage,
   }) {
-    final idx = items!.indexWhere((e) => itemUid == _idGetterFn!(e));
-    if (idx != -1) {
-      if (item == null) {
-        items!.removeAt(idx);
-      } else {
-        items![idx] = item;
-      }
+    return dataLength >= itemsPerPage;
+  }
+
+  late bool _hasMore;
+
+  PaginatedItemsResponse.empty({
+    required this.idGetter,
+  })  : paginationKey = null,
+        _hasMore = false,
+        itemsPerPage = 0,
+        data = const [],
+        _paginationKeyGetter = ((_) => null);
+
+  PaginatedItemsResponse.fromListWithNoPaginationSupport({
+    required this.data,
+    required this.idGetter,
+  })  : paginationKey = null,
+        _hasMore = false,
+        itemsPerPage = 0,
+        _paginationKeyGetter = ((_) => null);
+
+  PaginatedItemsResponse({
+    required this.data,
+    required this.itemsPerPage,
+    required dynamic Function(T) paginationKeyGetter,
+    required this.idGetter,
+    dynamic defaultPaginationKey,
+  })  : _hasMore = _calculateHasMore(
+          dataLength: data.length,
+          itemsPerPage: itemsPerPage,
+        ),
+        _paginationKeyGetter = paginationKeyGetter,
+        paginationKey = defaultPaginationKey ??
+            _getPaginationKey(
+              data,
+              paginationKeyGetter: paginationKeyGetter,
+            );
+
+  bool get hasMore => _hasMore;
+
+  bool get isEmpty => data.isEmpty;
+
+  bool get isNotEmpty => data.isNotEmpty;
+
+  int get length => data.length;
+
+  PaginatedItemsResponse<N> updateListWithNewType<N>(
+    N Function(T) mapper, {
+    required dynamic Function(N) paginationKeyGetter,
+    required String Function(N) idGetter,
+  }) {
+    return PaginatedItemsResponse<N>(
+      data: data.map(mapper).toList().cast<N>(),
+      itemsPerPage: itemsPerPage,
+      idGetter: idGetter,
+      paginationKeyGetter: paginationKeyGetter,
+      defaultPaginationKey: paginationKey,
+    ).._hasMore = _hasMore;
+  }
+
+  void addAll(
+    Iterable<T> newData, {
+    bool shouldUpdatePaginationKey = true,
+  }) {
+    data = <T>[...data];
+
+    final existingIds = data.map(idGetter).toSet();
+
+    data.addAll(
+      newData.where((e) => !existingIds.contains(idGetter(e))),
+    );
+
+    if (shouldUpdatePaginationKey) updatePaginationKey();
+  }
+
+  PaginatedItemsResponse<T> _update(PaginatedItemsResponse<T> newResponse) {
+    itemsPerPage = newResponse.itemsPerPage;
+
+    _hasMore = _calculateHasMore(
+      dataLength: newResponse.length,
+      itemsPerPage: itemsPerPage,
+    );
+
+    if (newResponse.isNotEmpty) {
+      addAll(newResponse.data, shouldUpdatePaginationKey: false);
+      paginationKey = newResponse.paginationKey;
+    }
+
+    return this;
+  }
+
+  void insert(
+    T item, {
+    int insertionIdx = 0,
+    bool removeLastIfExceedsItemsPerPage = true,
+    bool shouldUpdatePaginationKey = true,
+  }) {
+    data = <T>[...data];
+    data.insert(insertionIdx, item);
+
+    if (removeLastIfExceedsItemsPerPage && data.length > itemsPerPage) {
+      data.removeLast();
+    }
+
+    if (shouldUpdatePaginationKey) updatePaginationKey();
+  }
+
+  void updatePaginationKey() {
+    paginationKey = _getPaginationKey(
+      data,
+      paginationKeyGetter: _paginationKeyGetter,
+    );
+  }
+
+  static dynamic _getPaginationKey<T>(
+    List<T> data, {
+    required dynamic Function(T) paginationKeyGetter,
+  }) {
+    return data.isEmpty ? null : paginationKeyGetter(data.last);
+  }
+
+  PaginatedItemsResponse<T> map(
+    T Function(T) mapper, {
+    bool inPlace = false,
+    bool shouldUpdatePaginationKey = true,
+  }) {
+    if (inPlace) {
+      data = data.map(mapper).toList().cast<T>();
+      if (shouldUpdatePaginationKey) updatePaginationKey();
+      return this;
     } else {
-      if (item != null && addIfDoesNotExist) items!.add(item);
+      return PaginatedItemsResponse<T>(
+        data: data.map(mapper).toList().cast<T>(),
+        itemsPerPage: itemsPerPage,
+        idGetter: idGetter,
+        defaultPaginationKey: paginationKey,
+        paginationKeyGetter: _paginationKeyGetter,
+      ).._hasMore = _hasMore;
     }
   }
 
-  /// Updates the response
-  void update(PaginatedItemsResponse<T> res) {
-    _update(res.items, res.paginationKey);
-  }
-
-  /// Append items to the list, after a successful fetch from the API.
-  void _update(Iterable<T>? listItems, dynamic key) {
-    items ??= [];
-    if (listItems != null) {
-      for (final item in listItems) {
-        updateItem(_idGetterFn!(item), item, addIfDoesNotExist: true);
-      }
+  PaginatedItemsResponse<T> filter(
+    bool Function(T) predicate, {
+    bool inPlace = false,
+    bool shouldUpdatePaginationKey = true,
+  }) {
+    if (inPlace) {
+      data = data.where(predicate).toList().cast<T>();
+      if (shouldUpdatePaginationKey) updatePaginationKey();
+      return this;
+    } else {
+      return PaginatedItemsResponse<T>(
+        data: data.where(predicate).toList().cast<T>(),
+        itemsPerPage: itemsPerPage,
+        idGetter: idGetter,
+        defaultPaginationKey: paginationKey,
+        paginationKeyGetter: _paginationKeyGetter,
+      ).._hasMore = _hasMore;
     }
-    paginationKey = key;
   }
 
-  /// Logs the response.
+  bool updateItemWithId(
+    String id, {
+    required T Function(T?) updater,
+    bool addIfDoesNotExist = false,
+    bool shouldUpdatePaginationKey = true,
+  }) {
+    bool didUpdate = false;
+
+    final index = data.indexWhere((e) => idGetter(e) == id);
+    if (addIfDoesNotExist && index == -1) {
+      data.add(updater(null));
+      didUpdate = true;
+    } else {
+      data[index] = updater(data[index]);
+      didUpdate = true;
+    }
+
+    if (didUpdate && shouldUpdatePaginationKey) updatePaginationKey();
+
+    return didUpdate;
+  }
+
+  T? findById(String id) {
+    final idx = data.indexWhere((e) => id == idGetter(e));
+    if (idx != -1) return data[idx];
+
+    return null;
+  }
+
   void log() => dev.log('\n${toString()}', name: 'PaginatedItemsResponse<$T>');
 
   @override
   String toString() {
-    final itemsArrString = items
-        ?.map((item) => item.toString())
+    final itemsArrString = data
+        .map((item) => item.toString())
         .map((itemName) => '\t\t$itemName,')
         .join('\n');
 
     return """
 PaginatedItemsResponse<$T>({
-  items: ${items == null ? 'null' : '[\n$itemsArrString\n\t],'}
+  items: [\n$itemsArrString\n\t],
   paginationKey: $paginationKey,
 });""";
   }
 
   /// Clear the contents.
   void clear() {
-    items = null;
+    data = [];
+    itemsPerPage = 0;
+    _hasMore = false;
     paginationKey = null;
   }
+
+  void operator []=(int index, T value) => data[index] = value;
+
+  T operator [](int index) => data[index];
 }
