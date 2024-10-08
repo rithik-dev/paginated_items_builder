@@ -1,3 +1,10 @@
+# [1.2.4]
+
+* Added issue tracker link
+* Updated README.md
+* Updated example app
+* Updated dependencies
+
 # [1.2.3]
 
 * Fixed ShimmerConfig initialization error
