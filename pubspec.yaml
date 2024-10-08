@@ -15,6 +15,11 @@ environment:
   sdk: ">=2.17.0 <4.0.0"
   flutter: ">=1.9.1"
 
+scripts:
+  pre_publish: dart format .; flutter pub publish --dry-run
+  publish_skip_validation: flutter pub publish --skip-validation
+  publish: flutter pub publish
+
 dependencies:
   flutter:
     sdk: flutter
