@@ -69,6 +69,8 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.addSemanticIndexes = true,
     this.dragStartBehavior = DragStartBehavior.start,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.hitTestBehavior = HitTestBehavior.opaque,
+    this.findChildIndexCallback,
   });
 
   /// This is the controller function that should handle fetching the list
@@ -435,6 +437,13 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// the framework will bring that item into view with
   /// an (implicit) scroll action.
   final double? cacheExtent;
+
+  /// Defines the behavior of gesture detector used in this [Scrollable].
+  /// This defaults to [HitTestBehavior.opaque] which means it prevents targets behind this [Scrollable] from receiving events.
+  /// Defaults to [HitTestBehavior.opaque].
+  final HitTestBehavior hitTestBehavior;
+
+  final ChildIndexGetter? findChildIndexCallback;
 
   /// The content will be clipped (or not) according to this option.
   ///
@@ -825,6 +834,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
       cacheExtent: widget.cacheExtent,
+      hitTestBehavior: widget.hitTestBehavior,
+      findChildIndexCallback: widget.findChildIndexCallback,
       itemBuilder: _itemBuilder,
       padding: widget.padding ?? config.padding,
       separatorBuilder: (_, __) =>
@@ -854,6 +865,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
       cacheExtent: widget.cacheExtent,
+      hitTestBehavior: widget.hitTestBehavior,
+      findChildIndexCallback: widget.findChildIndexCallback,
       itemBuilder: _itemBuilder,
       gridDelegate: widget.gridDelegate ??
           SliverGridDelegateWithFixedCrossAxisCount(
