@@ -1,3 +1,7 @@
+## 1.2.5 - 2026-07-28
+
+* Added GitHub Actions CI to automate version bumps, changelog updates, tagging and pub.dev publishing.
+
 ## 1.2.4 - 2024-10-09
 
 * Added issue tracker link
