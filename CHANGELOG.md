@@ -1,31 +1,31 @@
-# [1.2.4]
+## 1.2.4 - 2024-10-09
 
 * Added issue tracker link
 * Updated README.md
 * Updated example app
 * Updated dependencies
 
-# [1.2.3]
+## 1.2.3 - 2022-06-08
 
 * Fixed ShimmerConfig initialization error
 
-# [1.2.2]
+## 1.2.2 - 2022-06-07
 
 * Fixed linter warnings
 * Updated dependencies
 * Updated config.. (Added more elements in config)
 
-# [1.2.1+1]
+## 1.2.1+1 - 2022-04-18
 
 * Updated README.md
 
-# [1.2.1]
+## 1.2.1 - 2022-04-18
 
 * Added errorTextGetter in config
 * Added customScrollPhysics, bottomLoader param
 * Now, can return a widget from mockItemGetter instead of an object, to directly render that widget...
 
-# [1.2.0]
+## 1.2.0 - 2022-04-15
 
 * Added a new ItemsFetchScope i.e. onErrorRefresh, which comes in play if an error occurs
 * Added error handling in the builder
@@ -44,7 +44,7 @@
 * Updated example app
 * Fixed README.md
 
-# [1.1.0]
+## 1.1.0 - 2022-04-01
 
 * Added error logs
 * Optimized initializing PaginatedItemsBuilder
@@ -52,15 +52,15 @@
 * Updated example app
 * Updated README.md
 
-# [1.0.9]
+## 1.0.9 - 2022-03-31
 
 * Added ignore pointer to disable onTap for loaders
 
-# [1.0.8]
+## 1.0.8 - 2022-03-31
 
 * Added isLoading param to LoaderShimmer
 
-# [1.0.7]
+## 1.0.7 - 2022-03-31
 
 * Added some helper getters/functions in PaginatedItemsResponse. 
 * Added ItemsFetchScope i.e. defines the scope from which fetchPageData in PaginatedItemsBuilder was called.
@@ -69,12 +69,12 @@
 * Updated example app
 * Updated README.md
 
-# [1.0.6]
+## 1.0.6 - 2022-03-29
 
 * Fixed a bug where fetchData was called twice if PaginationItemsStateHandler was used as parent in release mode (optimization).
 * Updated example app
 
-# [1.0.5]
+## 1.0.5 - 2022-03-29
 
 * Added access/update to list elements by using [] syntax on PaginatedItemsResponse directly.
 * Added custom refresh icon builder parameter
@@ -86,53 +86,53 @@
 * Updated example app
 * Updated README.md
 
-# [1.0.4]
+## 1.0.4 - 2022-02-15
 
 * Fixed late initialize error for shimmer direction variable
 * Updated README.md
 
-# [1.0.3]
+## 1.0.3 - 2022-02-15
 
 * Exposed shimmer direction property
 * Updated docs
 * Updated README.md
 
-# [1.0.2]
+## 1.0.2 - 2022-02-15
 
 * Updated default shimmer duration
 * Updated README.md
 
-# [1.0.1]
+## 1.0.1 - 2022-02-07
 
 * Updated README.md
 
-# [1.0.0]
+## 1.0.0 - 2022-01-26
 
 * Updated license
 * Updated README.md
 
-# [0.0.5]
+## 0.0.5 - 2022-01-15
 
 * Made items in config constructors optional
 * Not showing multiple loaders when MockItem not found
 * Added remaining field docs
 * Added a better example app showing full functionality
 
-# [0.0.4]
+## 0.0.4 - 2022-01-10
 
 * Fixed example app
 
-# [0.0.3]
+## 0.0.3 - 2022-01-10
 
 * Minor README fix
 
-# [0.0.2]
+## 0.0.2 - 2022-01-10
 
 * Fixed web support (removed dart:io import)
 * Fixed example app placement
 * Fixed formatting for files
 
-# [0.0.1]
+## 0.0.1 - 2021-11-21
 
 * Easier to display items in a list/grid view from your controllers directly or handling state
   internally with support for pagination. Saves the results in state to avoid unnecessary api calls
