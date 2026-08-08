@@ -8,12 +8,10 @@ import 'package:paginated_items_builder/paginated_items_builder.dart';
 /// The [builder] provides the required arguments needed by the [PaginatedItemsBuilder].
 class PaginationItemsStateHandler<T> extends StatefulWidget {
   /// Pass in a function that calls the API and returns a [PaginatedItemsResponse].
-  final Future<PaginatedItemsResponse<T>> Function(
-    dynamic paginationKey,
-  ) fetchPageData;
+  final Future<PaginatedItemsResponse<T>> Function(dynamic paginationKey) fetchPageData;
 
   /// Callback method that usually should return a [PaginatedItemsBuilder] and
-  /// pass the [response] and [fetchPageData] params to the builder.
+  /// pass the `response` and `fetchPageData` params to the builder.
   ///
   /// See also:
   ///
@@ -22,7 +20,8 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
   final Widget Function(
     PaginatedItemsResponse<T>? response,
     Future<PaginatedItemsResponse<T>?> Function(bool reset) fetchPageData,
-  ) builder;
+  )
+  builder;
 
   const PaginationItemsStateHandler({
     super.key,
@@ -31,12 +30,10 @@ class PaginationItemsStateHandler<T> extends StatefulWidget {
   });
 
   @override
-  State<PaginationItemsStateHandler<T>> createState() =>
-      _PaginationItemsStateHandlerState<T>();
+  State<PaginationItemsStateHandler<T>> createState() => _PaginationItemsStateHandlerState<T>();
 }
 
-class _PaginationItemsStateHandlerState<T>
-    extends State<PaginationItemsStateHandler<T>> {
+class _PaginationItemsStateHandlerState<T> extends State<PaginationItemsStateHandler<T>> {
   PaginatedItemsResponse<T>? _itemsResponse;
 
   Future<PaginatedItemsResponse<T>?> _update(bool reset) async {
@@ -52,9 +49,7 @@ class _PaginationItemsStateHandlerState<T>
       _itemsResponse?.update(res);
     }
 
-    try {
-      setState(() {});
-    } catch (_) {}
+    if (mounted) setState(() {});
 
     return _itemsResponse;
   }

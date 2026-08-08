@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart' hide ErrorWidgetBuilder;
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:paginated_items_builder/paginated_items_builder.dart';
-import 'package:paginated_items_builder/src/type_definitions.dart';
 
 /// enum used to check how the items are to be rendered on the screen.
 /// Whether in a list view or a grid view.
@@ -26,6 +26,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     required this.response,
     required this.itemBuilder,
     this.cacheExtent,
+    this.scrollCacheExtent,
     this.logErrors,
     this.customScrollPhysics,
     this.scrollController,
@@ -78,7 +79,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// that means an action was triggered which requires to
   /// force reload the items of the list.
   ///
-  /// The [reset] flag will be true only when the [itemsFetchScope] is either
+  /// The `reset` flag will be true only when the `itemsFetchScope` is either
   /// [ItemsFetchScope.noItemsRefresh] i.e. no items were found, and user
   /// clicked the refresh icon OR [ItemsFetchScope.pullDownToRefresh] i.e.
   /// the user wants to refresh the list contents with pull-down action. OR
@@ -145,12 +146,12 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// This is passed in the [PaginatedItemsBuilderConfig.mockItemGetter]'s key
   /// parameter in the callback.
   ///
-  /// If [mockItemKey] is provided, then the <[T]> param in mockItemsGetter
+  /// If [PaginatedItemsBuilder.mockItemKey] is provided, then the `T` param in mockItemsGetter
   /// is ignored to get the mock item.
   ///
-  /// If [mockItemKey] is null, then [T] is used.
+  /// If [PaginatedItemsBuilder.mockItemKey] is null, then `T` is used.
   ///
-  /// Should be preferably used if [T] is generic like [String].
+  /// Should be preferably used if `T` is generic like [String].
   final String? mockItemKey;
 
   /// Useful when the [PaginatedItemsBuilder] is a child of another scrollable,
@@ -164,7 +165,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
 
   /// {@template refreshIconBuilder}
   ///
-  /// The refresh icon builder. [showRefreshIcon] is
+  /// The refresh icon builder. [PaginatedItemsBuilder.showRefreshIcon] is
   /// ignored if [refreshIconBuilder] is not null;
   ///
   /// The parameter provides a function which should be passed to your custom
@@ -177,8 +178,8 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// The text to show if no items are present.
   ///
-  /// The value provided is the [mockItemKey].
-  /// If [mockItemKey] is null, then [T] is passed.
+  /// The value provided is the [PaginatedItemsBuilder.mockItemKey].
+  /// If [PaginatedItemsBuilder.mockItemKey] is null, then `T` is passed.
   ///
   /// Has no effect if [noItemsWidgetBuilder] is not null.
   ///
@@ -189,10 +190,10 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// The widget to display if no items are there to display.
   ///
-  /// The first param is the typeKey, i.e. [mockItemKey]
-  /// if [mockItemKey] is not null, else [T] is passed.
+  /// The first param is the typeKey, i.e. [PaginatedItemsBuilder.mockItemKey]
+  /// if [PaginatedItemsBuilder.mockItemKey] is not null, else `T` is passed.
   ///
-  /// The 2nd param is [refreshOnTap] which should be passed to the refresh
+  /// The 2nd param is `refreshOnTap` which should be passed to the refresh
   /// button to refresh the contents.
   ///
   /// [noItemsTextGetter] has no effect if [noItemsWidgetBuilder] is not null.
@@ -226,7 +227,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// The first param is the error occurred.
   ///
-  /// The 2nd param is [refreshOnTap] which should be passed to the refresh
+  /// The 2nd param is `refreshOnTap` which should be passed to the refresh
   /// button to refresh the contents.
   ///
   /// [errorTextGetter] has no effect if [errorWidgetBuilder] is not null.
@@ -268,45 +269,45 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// Whether to display items in a list view or grid view.
   final ItemsDisplayType itemsDisplayType;
 
-  /// If true, then [mockItemGetter] will not be called whatsoever, and
-  /// mock item remains null...
+  /// If true, then [PaginatedItemsBuilderConfig.mockItemGetter] will not be
+  /// called whatsoever, and mock item remains null...
   final bool ignoreMockItemGetter;
 
   /// {@template loader}
   ///
-  /// The full-screen loader to render if [mockItem] not
+  /// The full-screen loader to render if `mockItem` not
   /// found from [PaginatedItemsBuilderConfig.mockItemGetter] or
-  /// [ignoreMockItemGetter] is true.
+  /// [PaginatedItemsBuilder.ignoreMockItemGetter] is true.
   ///
   /// {@endtemplate}
   final Widget? loader;
 
   /// {@template bottomLoader}
   ///
-  /// The bottom-loader to render if [mockItem] not
+  /// The bottom-loader to render if `mockItem` not
   /// found from [PaginatedItemsBuilderConfig.mockItemGetter] or
-  /// [ignoreMockItemGetter] is true.
+  /// [PaginatedItemsBuilder.ignoreMockItemGetter] is true.
   ///
   /// {@endtemplate}
   final Widget? bottomLoader;
 
   /// {@template showLoaderOnResetGetter}
   ///
-  /// Whether to switch all the cards to their respective loaders when [reset] is true,
+  /// Whether to switch all the cards to their respective loaders when `reset` is true,
   /// i.e. if the user pulls down to refresh, or no items were found...
   ///
   /// The callback value is the [ItemsFetchScope], which defines the action calling the
   /// fetch data function.
   ///
-  /// This callback will only be called if [reset] is true.
+  /// This callback will only be called if `reset` is true.
   ///
-  /// The [reset] flag will be true only when the [itemsFetchScope] is either
+  /// The `reset` flag will be true only when the `itemsFetchScope` is either
   /// [ItemsFetchScope.noItemsRefresh] i.e. no items were found, and user
   /// clicked the refresh icon OR [ItemsFetchScope.pullDownToRefresh] i.e.
   /// the user wants to refresh the list contents with pull-down action OR
   /// if [ItemsFetchScope.onErrorRefresh] if an error occurs..
   ///
-  /// By default, the loader will show if [itemsFetchScope] is either
+  /// By default, the loader will show if `itemsFetchScope` is either
   /// [ItemsFetchScope.noItemsRefresh] or [ItemsFetchScope.onErrorRefresh]..
   ///
   /// The loader will always show on [ItemsFetchScope.initialLoad], no matter what.
@@ -323,9 +324,9 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// If not null, the refresh indicator might not work as expected.
   ///
   /// If you want to use your own refresh indicator outside of this widget,
-  /// pass [disableRefreshIndicator] as true.
+  /// pass [PaginatedItemsBuilder.disableRefreshIndicator] as true.
   ///
-  /// If not null, [neverScrollablePhysicsOnShrinkWrap] is ignored.
+  /// If not null, [PaginatedItemsBuilder.neverScrollablePhysicsOnShrinkWrap] is ignored.
   ///
   /// See also:
   ///
@@ -434,7 +435,16 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// item in the visible viewport to an invisible item in the cache area,
   /// the framework will bring that item into view with
   /// an (implicit) scroll action.
+  ///
+  /// Expressed in pixels. Ignored if [scrollCacheExtent] is not null.
   final double? cacheExtent;
+
+  /// The cache area of the viewport, expressed as a [ScrollCacheExtent].
+  ///
+  /// Takes precedence over [cacheExtent], which is the older pixels-only form
+  /// of the same setting. Prefer this one — it can also express the cache area
+  /// in viewports or as a fixed number of items.
+  final ScrollCacheExtent? scrollCacheExtent;
 
   /// The content will be clipped (or not) according to this option.
   ///
@@ -449,7 +459,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   ///
   /// When this is true, the scroll view is scrollable even if it does not have
   /// sufficient content to actually scroll. Otherwise, by default the user can
-  /// only scroll the view if it has sufficient content. See [physics].
+  /// only scroll the view if it has sufficient content. See `physics`.
   ///
   /// Also when true, the scroll view is used for default [ScrollAction]s. If a
   /// ScrollAction is not handled by an otherwise focused part of the application,
@@ -460,7 +470,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// response to a tap in the status bar.
   ///
   /// Defaults to true when [scrollDirection] is [Axis.vertical] and
-  /// [controller] is null.
+  /// [PaginatedItemsBuilder.scrollController] is null.
   final bool? primary;
 
   /// Whether to wrap each child in an [AutomaticKeepAlive].
@@ -540,9 +550,7 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
 
   @override
-  // ignore: library_private_types_in_public_api
-  _PaginatedItemsBuilderState<T> createState() =>
-      _PaginatedItemsBuilderState<T>();
+  State<PaginatedItemsBuilder<T>> createState() => _PaginatedItemsBuilderState<T>();
 }
 
 class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
@@ -551,6 +559,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   bool get hasError => _error != null;
 
   int? _lastLoaderBuiltIndex;
+
+  bool _isFetching = false;
 
   late bool showMainLoader;
   late bool showBottomLoader;
@@ -563,9 +573,13 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     bool reset = false,
     required ItemsFetchScope itemsFetchScope,
   }) async {
+    _isFetching = true;
+
     setState(() {
       showMainLoader = (itemsFetchScope != ItemsFetchScope.loadMoreData);
       if (reset) {
+        _lastLoaderBuiltIndex = null;
+
         if (widget.showLoaderOnResetGetter != null) {
           showMainLoader = widget.showLoaderOnResetGetter!(itemsFetchScope);
         } else {
@@ -594,12 +608,13 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     if (showMainLoader) showMainLoader = false;
 
-    try {
-      setState(() {});
-    } catch (_) {}
+    _isFetching = false;
+
+    if (!mounted) return;
+    setState(() {});
   }
 
-  Widget _itemBuilder(context, index) {
+  Widget _itemBuilder(BuildContext context, int index) {
     if (!showMainLoader && widget.response?.items != null) {
       // bottom loader
       // passing index only for bottom loader, to update [_lastLoaderBuiltIndex]
@@ -615,13 +630,9 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   Widget _loaderBuilder([int? bottomLoaderIdx]) {
     Widget buildMockItemLoader() {
-      final mockItemWidget = mockItem is Widget
-          ? mockItem!
-          : widget.itemBuilder(context, 0, mockItem!);
+      final mockItemWidget = mockItem is Widget ? mockItem! : widget.itemBuilder(context, 0, mockItem!);
 
-      final builtMockItem = widget.disableLoaderOnTaps
-          ? IgnorePointer(child: mockItemWidget)
-          : mockItemWidget;
+      final builtMockItem = widget.disableLoaderOnTaps ? IgnorePointer(child: mockItemWidget) : mockItemWidget;
 
       if (bottomLoaderIdx == null) {
         // if index is null, means this loader is being used for initial loading
@@ -634,10 +645,11 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     }
 
     if (widget.paginate && bottomLoaderIdx != null) {
-      if (_lastLoaderBuiltIndex != bottomLoaderIdx) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _fetchData(itemsFetchScope: ItemsFetchScope.loadMoreData),
-        );
+      if (_lastLoaderBuiltIndex != bottomLoaderIdx && !_isFetching) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _fetchData(itemsFetchScope: ItemsFetchScope.loadMoreData);
+        });
         _lastLoaderBuiltIndex = bottomLoaderIdx;
       }
     }
@@ -645,14 +657,14 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     final loader = widget.loader ?? config.loader;
     final bottomLoader = widget.bottomLoader ?? config.bottomLoader;
 
-    return mockItem == null
-        ? (bottomLoaderIdx == null ? loader : bottomLoader)
-        : buildMockItemLoader();
+    return mockItem == null ? (bottomLoaderIdx == null ? loader : bottomLoader) : buildMockItemLoader();
   }
 
   Widget _buildRefreshIcon(VoidCallback refreshOnTap) {
-    if (widget.refreshIconBuilder != null) {
-      return widget.refreshIconBuilder!(refreshOnTap);
+    final refreshIconBuilder = widget.refreshIconBuilder ?? config.refreshIconBuilder;
+
+    if (refreshIconBuilder != null) {
+      return refreshIconBuilder(refreshOnTap);
     } else if (widget.showRefreshIcon) {
       return IconButton(
         icon: const Icon(Icons.refresh),
@@ -665,16 +677,15 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   Widget _noItemsWidget() {
     void onTap() {
-      _fetchData(
-        reset: true,
-        itemsFetchScope: ItemsFetchScope.noItemsRefresh,
-      );
+      _fetchData(reset: true, itemsFetchScope: ItemsFetchScope.noItemsRefresh);
     }
 
     final itemName = widget.mockItemKey ?? T.toString();
 
-    if (widget.noItemsWidgetBuilder != null) {
-      return widget.noItemsWidgetBuilder!(itemName, onTap);
+    final noItemsWidgetBuilder = widget.noItemsWidgetBuilder ?? config.noItemsWidgetBuilder;
+
+    if (noItemsWidgetBuilder != null) {
+      return noItemsWidgetBuilder(itemName, onTap);
     }
 
     return Center(
@@ -682,8 +693,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            widget.noItemsTextGetter?.call(itemName) ??
-                config.noItemsTextGetter(itemName),
+            widget.noItemsTextGetter?.call(itemName) ?? config.noItemsTextGetter(itemName),
             style: widget.noItemsTextStyle ?? config.noItemsTextStyle,
           ),
           _buildRefreshIcon(onTap),
@@ -694,14 +704,13 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   Widget _errorWidget() {
     void onTap() {
-      _fetchData(
-        reset: true,
-        itemsFetchScope: ItemsFetchScope.onErrorRefresh,
-      );
+      _fetchData(reset: true, itemsFetchScope: ItemsFetchScope.onErrorRefresh);
     }
 
-    if (widget.errorWidgetBuilder != null) {
-      return widget.errorWidgetBuilder!(_error, onTap);
+    final errorWidgetBuilder = widget.errorWidgetBuilder ?? config.errorWidgetBuilder;
+
+    if (errorWidgetBuilder != null) {
+      return errorWidgetBuilder(_error, onTap);
     }
 
     return Center(
@@ -709,8 +718,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            widget.errorTextGetter?.call(_error) ??
-                config.errorTextGetter(_error),
+            widget.errorTextGetter?.call(_error) ?? config.errorTextGetter(_error),
             style: widget.errorTextStyle ?? config.errorTextStyle,
           ),
           _buildRefreshIcon(onTap),
@@ -727,9 +735,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     if (widget.ignoreMockItemGetter) {
       mockItem = null;
     } else {
-      mockItem = widget.mockItemKey == null
-          ? config.mockItemGetter<T>()
-          : config.mockItemGetter(widget.mockItemKey);
+      mockItem = widget.mockItemKey == null ? config.mockItemGetter<T>() : config.mockItemGetter(widget.mockItemKey);
     }
 
     if (widget.customScrollPhysics != null) {
@@ -745,9 +751,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
   @override
   void initState() {
+    super.initState();
+
     _initState();
     _fetchData(itemsFetchScope: ItemsFetchScope.initialLoad);
-    super.initState();
   }
 
   @override
@@ -758,8 +765,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
 
     // bottom loader is always built, as when rendered in view,
     // calls _fetchData to fetch more data..
-    showBottomLoader =
-        widget.paginate && (widget.response?.hasMoreData ?? false);
+    showBottomLoader = widget.paginate && (widget.response?.hasMoreData ?? false);
 
     // set: itemCount
     (() {
@@ -770,9 +776,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         }
         itemsLen += showBottomLoader ? 1 : 0;
       }
-      itemCount = widget.maxLength == null
-          ? itemsLen
-          : min(itemsLen, widget.maxLength!);
+      itemCount = widget.maxLength == null ? itemsLen : min(itemsLen, widget.maxLength!);
     })();
 
     if (showMainLoader) {
@@ -785,9 +789,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       return _errorWidget();
     } else if (widget.response?.items?.isEmpty ?? false) {
       return _noItemsWidget();
-    } else if (widget.disableRefreshIndicator ||
-        widget.shrinkWrap ||
-        widget.scrollDirection == Axis.horizontal) {
+    } else if (widget.disableRefreshIndicator || widget.shrinkWrap || widget.scrollDirection == Axis.horizontal) {
       return _buildItems();
     } else {
       return RefreshIndicator(
@@ -798,6 +800,18 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
         child: _buildItems(),
       );
     }
+  }
+
+  /// Flutter deprecated the pixels-only `cacheExtent` in favour of
+  /// [ScrollCacheExtent]. The older [PaginatedItemsBuilder.cacheExtent] is
+  /// still honoured by converting it here, so only the current API is used
+  /// against the framework.
+  ScrollCacheExtent? get _effectiveScrollCacheExtent {
+    final scrollCacheExtent = widget.scrollCacheExtent;
+    if (scrollCacheExtent != null) return scrollCacheExtent;
+
+    final cacheExtent = widget.cacheExtent;
+    return cacheExtent == null ? null : ScrollCacheExtent.pixels(cacheExtent);
   }
 
   // TODO: add slivers support
@@ -825,10 +839,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       scrollDirection: widget.scrollDirection,
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
-      cacheExtent: widget.cacheExtent,
+      scrollCacheExtent: _effectiveScrollCacheExtent,
       itemBuilder: _itemBuilder,
       padding: widget.padding ?? config.padding,
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           widget.listSeparatorWidget ??
           SizedBox(
             width: widget.listItemsGap,
@@ -854,9 +868,10 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       scrollDirection: widget.scrollDirection,
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
-      cacheExtent: widget.cacheExtent,
+      scrollCacheExtent: _effectiveScrollCacheExtent,
       itemBuilder: _itemBuilder,
-      gridDelegate: widget.gridDelegate ??
+      gridDelegate:
+          widget.gridDelegate ??
           SliverGridDelegateWithFixedCrossAxisCount(
             childAspectRatio: widget.gridChildAspectRatio ?? 1,
             crossAxisCount: widget.gridCrossAxisCount ?? 2,

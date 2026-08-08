@@ -8,9 +8,7 @@ import 'package:paginated_items_builder_demo/widgets/post_card.dart';
 class HomeScreen extends StatelessWidget {
   static const id = 'HomeScreen';
 
-  const HomeScreen({
-    super.key,
-  });
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -9,8 +9,7 @@ class PostsController extends ChangeNotifier {
   static PostsController of(
     BuildContext context, {
     bool listen = true,
-  }) =>
-      Provider.of<PostsController>(context, listen: listen);
+  }) => Provider.of<PostsController>(context, listen: listen);
 
   PaginatedItemsResponse<Post>? _postsResponse;
 

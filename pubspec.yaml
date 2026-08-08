@@ -4,21 +4,16 @@ version: 1.2.5
 homepage: https://github.com/rithik-dev/paginated_items_builder
 repository: https://github.com/rithik-dev/paginated_items_builder
 issue_tracker: https://github.com/rithik-dev/paginated_items_builder/issues
-# documentation: https://github.com/rithik-dev/paginated_items_builder/blob/master/README.md
+documentation: https://github.com/rithik-dev/paginated_items_builder/blob/master/README.md
+
 topics:
   - flutter
   - widget
   - pagination
 
 environment:
-  # constraints from shimmer dependency
-  sdk: ">=2.17.0 <4.0.0"
-  flutter: ">=1.9.1"
-
-scripts:
-  pre_publish: dart format .; flutter pub publish --dry-run
-  publish_skip_validation: flutter pub publish --skip-validation
-  publish: flutter pub publish
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.41.0"
 
 dependencies:
   flutter:
@@ -27,4 +22,7 @@ dependencies:
   shimmer: ^3.0.0
 
 dev_dependencies:
-  flutter_lints: ^5.0.0
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0

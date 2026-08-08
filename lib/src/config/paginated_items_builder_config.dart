@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart' hide ErrorWidgetBuilder;
 import 'package:paginated_items_builder/paginated_items_builder.dart';
 import 'package:paginated_items_builder/src/config/config_defaults.dart';
-import 'package:paginated_items_builder/src/type_definitions.dart';
 
 /// The config for [PaginatedItemsBuilder].
 class PaginatedItemsBuilderConfig {
@@ -18,6 +17,9 @@ class PaginatedItemsBuilderConfig {
     this.logErrors = ConfigDefaults.logErrors,
     this.customScrollPhysics = ConfigDefaults.customScrollPhysics,
     this.padding = ConfigDefaults.padding,
+    this.noItemsWidgetBuilder,
+    this.errorWidgetBuilder,
+    this.refreshIconBuilder,
   }) {
     this.shimmerConfig = shimmerConfig ?? ShimmerConfig();
   }
@@ -25,7 +27,7 @@ class PaginatedItemsBuilderConfig {
   /// Create a function and pass the reference to this.
   ///
   /// The function will be passed the type `T` and expects an object with mock
-  /// data of type `T`. This calls the [PaginatedItemsBuilder]'s [itemBuilder]
+  /// data of type `T`. This calls the [PaginatedItemsBuilder]'s `itemBuilder`
   /// with the mockItem and overlays a shimmer for loading animation.
   ///
   /// You can also return a widget from this method, then that widget
@@ -41,16 +43,16 @@ class PaginatedItemsBuilderConfig {
   /// ```dart
   /// class MockItems {
   ///   static dynamic getByType<T>([String? mockItemKey]) {
-  //     final key = mockItemKey ?? T.toString();
-  //     switch (key) {
-  //       case 'Post':
-  //         return _post;
-  //     }
-  //   }
+  ///     final key = mockItemKey ?? T.toString();
+  ///     switch (key) {
+  ///       case 'Post':
+  ///         return _post;
+  ///     }
+  ///   }
   ///
   ///   static final _post = Post();
-  ///   ```
   /// }
+  /// ```
   late final dynamic Function<T>([String? key]) mockItemGetter;
 
   /// Provide a [ShimmerConfig] to customize the shimmer loading animation
@@ -61,7 +63,7 @@ class PaginatedItemsBuilderConfig {
   late final NoItemsTextGetter noItemsTextGetter;
 
   /// {@macro noItemsWidgetBuilder}
-  late final NoItemsWidgetBuilder noItemsWidgetBuilder;
+  late final NoItemsWidgetBuilder? noItemsWidgetBuilder;
 
   /// {@macro noItemsTextStyle}
   late final TextStyle noItemsTextStyle;
@@ -70,7 +72,7 @@ class PaginatedItemsBuilderConfig {
   late final ErrorTextGetter errorTextGetter;
 
   /// {@macro errorWidgetBuilder}
-  late final ErrorWidgetBuilder errorWidgetBuilder;
+  late final ErrorWidgetBuilder? errorWidgetBuilder;
 
   /// {@macro errorTextStyle}
   late final TextStyle errorTextStyle;
@@ -99,10 +101,10 @@ class PaginatedItemsBuilderConfig {
 
 /// [ShimmerConfig] class to customize the loading shimmer colors, duration etc.
 class ShimmerConfig {
-  /// The shimmer's base color. Defaults to Colors.grey[300].
+  /// The shimmer's base color. Defaults to `Colors.grey[300]`.
   final Color baseColor;
 
-  /// The shimmer's highlight color. Defaults to Colors.grey[200].
+  /// The shimmer's highlight color. Defaults to `Colors.grey[200]`.
   final Color highlightColor;
 
   /// The shimmer's duration. Defaults to 800ms.
@@ -121,6 +123,6 @@ class ShimmerConfig {
     Color? highlightColor,
     this.direction = _defaultDirection,
     this.duration = _defaultDuration,
-  })  : baseColor = baseColor ?? _defaultBaseColor,
-        highlightColor = highlightColor ?? _defaultHighlightColor;
+  }) : baseColor = baseColor ?? _defaultBaseColor,
+       highlightColor = highlightColor ?? _defaultHighlightColor;
 }

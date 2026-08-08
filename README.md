@@ -101,15 +101,27 @@ Future<PaginatedItemsResponse<Post>> apiFunction({
       // list of items
       listItems: res.data?.posts,
 
-      // only required to pass if pagination supported, else null. (can be of any type)
+      // required. pass null if the API has no pagination. (can be of any type)
+      // leaving it out is not allowed: a missing key silently means
+      // "no more data", which would stop the list after the first page.
       paginationKey: res.data?.paginationKey,
 
-      // unique id, should only be passed in the repository function.
-      // required for functions like `updateItem`, `findByUid`
-      // and avoiding duplication of items in list (compares uid)
-      idGetter: (post) => post.id,
+      // required. unique id, should only be passed in the repository function.
+      // used by `updateItem`, `findByUid`, and to avoid duplicating items
+      // that arrive again in a later page (compares uid)
+      idGetter: (post) => post.id.toString(),
     );
 }
+```
+
+If you need a response before the first page has been fetched — say you keep a
+non-nullable response on a controller — build an empty one and merge pages into
+it:
+
+```dart
+final postsResponse = PaginatedItemsResponse<Post>.empty(
+  idGetter: (post) => post.id.toString(),
+);
 ```
 
 Now, can use this widget like shown in the widget tree:
@@ -181,7 +193,7 @@ directly...
 final response = PaginatedItemsResponse<Post>(
   listItems: res.data?.posts,
   paginationKey: res.data?.paginationKey,
-  idGetter: (post) => post.id,
+  idGetter: (post) => post.id.toString(),
 );
 
 response.log();
