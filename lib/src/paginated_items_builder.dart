@@ -70,6 +70,8 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
     this.addSemanticIndexes = true,
     this.dragStartBehavior = DragStartBehavior.start,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.hitTestBehavior = HitTestBehavior.opaque,
+    this.findItemIndexCallback,
   });
 
   /// This is the controller function that should handle fetching the list
@@ -549,6 +551,26 @@ class PaginatedItemsBuilder<T> extends StatefulWidget {
   /// will dismiss the keyboard automatically.
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
 
+  /// How the gesture detector of the underlying scrollable should behave
+  /// during hit testing.
+  ///
+  /// [HitTestBehavior.opaque] stops widgets behind the list from receiving
+  /// events.
+  ///
+  /// Defaults to [HitTestBehavior.opaque], matching [ScrollView].
+  final HitTestBehavior hitTestBehavior;
+
+  /// Finds the index of an item by its key, so the list can keep the state of
+  /// items that move rather than rebuilding them from scratch.
+  ///
+  /// Useful when items are inserted or reordered: without it, a widget whose
+  /// position changed is treated as a new child and loses its state.
+  ///
+  /// The index is an **item** index, matching the one given to [itemBuilder].
+  /// It is never a child index, so there is no need to account for the
+  /// separators that [ItemsDisplayType.list] inserts between items.
+  final ChildIndexGetter? findItemIndexCallback;
+
   @override
   State<PaginatedItemsBuilder<T>> createState() => _PaginatedItemsBuilderState<T>();
 }
@@ -615,13 +637,14 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    if (!showMainLoader && widget.response?.items != null) {
+    final response = widget.response;
+
+    if (!showMainLoader && response != null) {
       // bottom loader
       // passing index only for bottom loader, to update [_lastLoaderBuiltIndex]
-      if (widget.response!.items!.length <= index) return _loaderBuilder(index);
+      if (response.items.length <= index) return _loaderBuilder(index);
 
-      final item = widget.response!.items![index];
-      return widget.itemBuilder(context, index, item);
+      return widget.itemBuilder(context, index, response.items[index]);
     } else {
       // initial loader
       return _loaderBuilder();
@@ -771,9 +794,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
     (() {
       int itemsLen = widget.loaderItemsCount;
       if (!showMainLoader) {
-        if (widget.response?.items?.length != null) {
-          itemsLen = widget.response!.items!.length;
-        }
+        final response = widget.response;
+        if (response != null) itemsLen = response.items.length;
         itemsLen += showBottomLoader ? 1 : 0;
       }
       itemCount = widget.maxLength == null ? itemsLen : min(itemsLen, widget.maxLength!);
@@ -787,7 +809,7 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       }
     } else if (hasError) {
       return _errorWidget();
-    } else if (widget.response?.items?.isEmpty ?? false) {
+    } else if (widget.response?.items.isEmpty ?? false) {
       return _noItemsWidget();
     } else if (widget.disableRefreshIndicator || widget.shrinkWrap || widget.scrollDirection == Axis.horizontal) {
       return _buildItems();
@@ -840,6 +862,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
       scrollCacheExtent: _effectiveScrollCacheExtent,
+      hitTestBehavior: widget.hitTestBehavior,
+      findItemIndexCallback: widget.findItemIndexCallback,
       itemBuilder: _itemBuilder,
       padding: widget.padding ?? config.padding,
       separatorBuilder: (_, _) =>
@@ -869,6 +893,8 @@ class _PaginatedItemsBuilderState<T> extends State<PaginatedItemsBuilder<T>> {
       reverse: widget.reverse,
       clipBehavior: widget.clipBehaviour,
       scrollCacheExtent: _effectiveScrollCacheExtent,
+      hitTestBehavior: widget.hitTestBehavior,
+      findChildIndexCallback: widget.findItemIndexCallback,
       itemBuilder: _itemBuilder,
       gridDelegate:
           widget.gridDelegate ??

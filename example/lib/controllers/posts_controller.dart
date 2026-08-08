@@ -21,11 +21,7 @@ class PostsController extends ChangeNotifier {
     final res = await PostsRepository.getPosts(
       startKey: reset ? null : _postsResponse?.paginationKey,
     );
-    if (reset || _postsResponse == null) {
-      _postsResponse = res;
-    } else {
-      _postsResponse?.update(res);
-    }
+    _postsResponse = _postsResponse.merge(res, reset: reset);
     notifyListeners();
     return _postsResponse;
   }

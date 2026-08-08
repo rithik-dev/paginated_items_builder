@@ -18,9 +18,12 @@ Saves the results in state to avoid unnecessary api calls everytime screen is pu
 - **[📷 Screenshots](#-screenshots)**
 - **[✨ Features](#-features)**
 - **[❓ Usage](#-usage)**
+  - [APIs that page by size instead of by cursor](#apis-that-page-by-size-instead-of-by-cursor)
   - [Shimmer loader](#shimmer-loader)
   - [PaginatedItemsBuilder Config](#paginateditemsbuilder-config)
   - [Supporting multiple themes](#supporting-multiple-themes)
+- **[🛫 Migration Guides](#-migration-guides)**
+  - [Migration Guide from v1.x to v2.x+](#migration-guide-from-v1x-to-v2x)
 - **[🎯 Sample Usage](#-sample-usage)**
 - **[👤 Collaborators](#-collaborators)**
 
@@ -75,13 +78,11 @@ Future<PaginatedItemsResponse<Post>?> updatePosts({bool reset = false}) async {
     // startKey is optional and only required when you have pagination support in api
     startKey: reset ? null : _postsResponse?.paginationKey,
   );
-  
-  if (reset || _postsResponse == null) {
-    // if res here is null, then an exception is thrown...
-    _postsResponse = res;
-  } else {
-    _postsResponse?.update(res);
-  }
+
+  // `merge` adopts the new response when there is nothing to merge into, or
+  // when reset is true (a pull-down refresh), and merges the page in otherwise.
+  _postsResponse = _postsResponse.merge(res, reset: reset);
+
   notifyListeners();
   return _postsResponse;
 }
@@ -120,6 +121,21 @@ it:
 
 ```dart
 final postsResponse = PaginatedItemsResponse<Post>.empty(
+  idGetter: (post) => post.id.toString(),
+);
+```
+
+## APIs that page by size instead of by cursor
+
+If your API has no end-of-list cursor and you instead know the page size, pass
+`itemsPerPage`. A page that comes back shorter than a full one is then treated
+as the last, and `paginationKey` stops being what decides it:
+
+```dart
+return PaginatedItemsResponse<Post>(
+  listItems: res.data?.posts,
+  paginationKey: nextOffset,
+  itemsPerPage: 20,
   idGetter: (post) => post.id.toString(),
 );
 ```
@@ -311,6 +327,110 @@ MaterialApp(
 
 Want to show items as a grid? Change the cross axis count? Pass in a custom scroll controller?
 Well, there are a lot of parameters that can be customized in [`PaginatedItemsBuilder`](https://github.com/rithik-dev/paginated_items_builder/blob/master/lib/src/paginated_items_builder.dart)
+
+---
+
+# 🛫 Migration Guides
+
+## Migration Guide from v1.x to v2.x+
+
+### 1. Minimum SDK versions raised
+
+- Flutter `3.41.0` or newer, Dart `3.9.0` or newer.
+- Stay on `1.2.5` if you cannot upgrade the SDK yet.
+
+### 2. `PaginatedItemsResponse` parameters are now all required
+
+`idGetter`, `listItems` and `paginationKey` were optional. Each failed
+silently when left out — without `idGetter` a page could duplicate items
+already in the list, and without `paginationKey` the list quietly stopped
+after the first page, because a missing key reads as "no more data".
+
+Pass `null` explicitly where a value does not apply:
+
+```dart
+return PaginatedItemsResponse<Post>(
+  listItems: res.data?.posts,
+- // paginationKey omitted
++ paginationKey: null, // or the cursor, if the API paginates
+  idGetter: (post) => post.id.toString(),
+);
+```
+
+> [!NOTE]
+> The analyzer flags every call site that needs updating, so this migration
+> is mechanical.
+
+### 3. `items` is no longer nullable
+
+`PaginatedItemsResponse.items` changed from `List<T>?` to a `final List<T>`.
+A response that exists always has a list, even when empty. Drop the `!` and
+the null checks:
+
+```dart
+- final count = response.items!.length;
+- if (response.items != null) { ... }
++ final count = response.items.length;
+```
+
+"Nothing fetched yet" is now expressed by a null **response**, not by null
+`items` inside one — which is what `PaginatedItemsBuilder.response` already
+did.
+
+`clear()` now empties the list instead of setting it to null, and the
+`hasData` getter is gone with nothing left to distinguish. Use `isEmpty` /
+`isNotEmpty`, or check the response itself for null:
+
+```dart
+- if (response.hasData) { ... }
++ if (response != null && response.isNotEmpty) { ... }
+```
+
+### 4. `operator []` returns a non-nullable item
+
+Indexing now behaves like a plain `List`, returning `T` and throwing a
+`RangeError` on a bad index rather than returning null:
+
+```dart
+- final post = response[0]!;
++ final post = response[0];
+```
+
+### 5. Config builders that never worked are now settable
+
+`noItemsWidgetBuilder`, `errorWidgetBuilder` and `refreshIconBuilder` on
+`PaginatedItemsBuilderConfig` were declared but could never be assigned, and
+reading them threw a `LateInitializationError`. They are now constructor
+parameters, used as the fallback when the widget does not override them:
+
+```dart
+PaginatedItemsBuilder.config = PaginatedItemsBuilderConfig(
+  errorWidgetBuilder: (error, refreshOnTap) => MyErrorView(onRetry: refreshOnTap),
+);
+```
+
+> [!IMPORTANT]
+> If you were working around this by passing the same builder to every
+> `PaginatedItemsBuilder`, you can now set it once on the config.
+
+### 6. Optional: adopt the new conveniences
+
+None of these are required, but they replace patterns you may have written
+by hand:
+
+- `response.merge(res, reset: reset)` replaces the
+  `if (reset || response == null) … else response.update(res)` branch.
+- `PaginatedItemsResponse.empty(idGetter: …)` for a response held before the
+  first fetch.
+- `updateItems(...)` is the bulk form of `updateItem`, and indexes ids once
+  instead of rescanning per item.
+- `itemsPerPage` derives `hasMoreData` from page size, for APIs with no
+  end-of-list cursor.
+- `length`, `isEmpty`, `isNotEmpty` on the response.
+- `scrollCacheExtent`, `hitTestBehavior` and `findItemIndexCallback` on the
+  builder.
+
+For more details, refer to the [CHANGELOG](https://github.com/rithik-dev/paginated_items_builder/blob/master/CHANGELOG.md).
 
 ---
 

@@ -39,17 +39,18 @@ void main() {
   });
 
   testWidgets('a response built with listItems: null shows the empty state', (tester) async {
-    // `items` must end up [] rather than null here. The builder reads null as
-    // "nothing fetched yet" and renders loaderItemsCount shimmer tiles with no
-    // refresh affordance, so a fetch that legitimately returned no rows would
-    // look like it was still loading, forever.
+    // `items` must end up [] rather than null here. The builder reads a null
+    // *response* as "nothing fetched yet" and renders loaderItemsCount shimmer
+    // tiles with no refresh affordance — but this response is not null, it is
+    // simply empty, so a fetch that legitimately returned no rows must not be
+    // mistaken for one still loading.
     final response = PaginatedItemsResponse<String>(
       idGetter: (item) => item,
       listItems: null,
       paginationKey: null,
     );
 
-    expect(response.items, isNotNull);
+    expect(response.items, isEmpty);
 
     await tester.pumpWidget(
       _wrap(

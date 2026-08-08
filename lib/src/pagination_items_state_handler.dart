@@ -42,12 +42,7 @@ class _PaginationItemsStateHandlerState<T> extends State<PaginationItemsStateHan
       reset ? null : _itemsResponse?.paginationKey,
     );
 
-    if (reset || _itemsResponse == null) {
-      // res should not be null
-      _itemsResponse = res;
-    } else {
-      _itemsResponse?.update(res);
-    }
+    _itemsResponse = _itemsResponse.merge(res, reset: reset);
 
     if (mounted) setState(() {});
 

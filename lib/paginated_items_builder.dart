@@ -3,6 +3,7 @@ library;
 export 'package:shimmer/shimmer.dart';
 
 export 'src/config/paginated_items_builder_config.dart';
+export 'src/extensions/paginated_items_response_extensions.dart';
 export 'src/items_fetch_scope.dart';
 export 'src/loader_shimmer.dart';
 export 'src/models/paginated_items_response.dart';

@@ -20,7 +20,6 @@ void main() {
       );
 
       expect(res.items, hasLength(2));
-      expect(res.hasData, isTrue);
       expect(res.hasMoreData, isTrue);
       expect(res.paginationKey, 'next');
     });
@@ -53,7 +52,7 @@ void main() {
         ),
       );
 
-      expect(res.items!.map(_idOf), ['1', '2']);
+      expect(res.items.map(_idOf), ['1', '2']);
       expect(res.paginationKey, 'p2');
     });
 
@@ -72,7 +71,7 @@ void main() {
         ),
       );
 
-      expect(res.items!.map(_idOf), ['1', '2', '3']);
+      expect(res.items.map(_idOf), ['1', '2', '3']);
       expect(res.findByUid('1')!.name, 'new');
     });
 
@@ -139,9 +138,10 @@ void main() {
         paginationKey: null,
       );
       res.clear();
-      expect(res.items, isNull);
+      expect(res.items, isEmpty);
 
-      // items is null here; this used to throw a null-check error.
+      // items is empty here; this used to throw a null-check error when it
+      // was null instead.
       expect(
         () => res.updateItem('1', const _Item('1', 'a'), addIfDoesNotExist: true),
         returnsNormally,
@@ -160,7 +160,7 @@ void main() {
 
       res.updateItems(const [_Item('2', 'b2'), _Item('3', 'c')]);
 
-      expect(res.items!.map(_idOf), ['1', '2', '3']);
+      expect(res.items.map(_idOf), ['1', '2', '3']);
       expect(res.findByUid('2')!.name, 'b2');
     });
 
@@ -176,7 +176,7 @@ void main() {
         addIfDoesNotExist: false,
       );
 
-      expect(res.items!.map(_idOf), ['1']);
+      expect(res.items.map(_idOf), ['1']);
       expect(res.findByUid('1')!.name, 'a2');
     });
 
@@ -190,6 +190,195 @@ void main() {
     });
   });
 
+  group('hasMoreData', () {
+    test('follows the pagination key when itemsPerPage is not set', () {
+      expect(
+        PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [_Item('1', 'a')],
+          paginationKey: 'next',
+        ).hasMoreData,
+        isTrue,
+      );
+      expect(
+        PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [_Item('1', 'a')],
+          paginationKey: null,
+        ).hasMoreData,
+        isFalse,
+      );
+    });
+
+    test('a full page means more, a short page means the end', () {
+      final full = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a'), _Item('2', 'b')],
+        paginationKey: null,
+        itemsPerPage: 2,
+      );
+      expect(full.hasMoreData, isTrue);
+
+      final short = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a')],
+        paginationKey: null,
+        itemsPerPage: 2,
+      );
+      expect(short.hasMoreData, isFalse);
+    });
+
+    test('itemsPerPage wins over the pagination key', () {
+      // A short page ends the list even though a key is still present.
+      final res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a')],
+        paginationKey: 'still-here',
+        itemsPerPage: 2,
+      );
+      expect(res.hasMoreData, isFalse);
+    });
+
+    test('is re-evaluated from the last merged page', () {
+      final res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a'), _Item('2', 'b')],
+        paginationKey: null,
+        itemsPerPage: 2,
+      );
+      expect(res.hasMoreData, isTrue);
+
+      res.update(
+        PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [_Item('3', 'c')],
+          paginationKey: null,
+        ),
+      );
+      expect(res.hasMoreData, isFalse, reason: 'last page was short');
+    });
+
+    test('measures the raw page, not the de-duplicated result', () {
+      final res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a'), _Item('2', 'b')],
+        paginationKey: null,
+        itemsPerPage: 2,
+      );
+
+      // A full page that happens to repeat known ids still means "more".
+      res.update(
+        PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [_Item('1', 'a2'), _Item('2', 'b2')],
+          paginationKey: null,
+        ),
+      );
+      expect(res.items, hasLength(2));
+      expect(res.hasMoreData, isTrue);
+    });
+
+    test('an empty response assumes a first page is waiting', () {
+      final res = PaginatedItemsResponse<_Item>.empty(
+        idGetter: _idOf,
+        itemsPerPage: 20,
+      );
+      expect(res.hasMoreData, isTrue);
+    });
+
+    test('rejects a non-positive itemsPerPage', () {
+      expect(
+        () => PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [],
+          paginationKey: null,
+          itemsPerPage: 0,
+        ),
+        throwsA(isA<AssertionError>()),
+      );
+    });
+  });
+
+  group('length / isEmpty / isNotEmpty', () {
+    test('reflect the items held', () {
+      final res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a')],
+        paginationKey: null,
+      );
+      expect(res.length, 1);
+      expect(res.isEmpty, isFalse);
+      expect(res.isNotEmpty, isTrue);
+    });
+
+    test('remain zero and empty after clear', () {
+      final res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a')],
+        paginationKey: null,
+      );
+      expect(res.length, 1);
+
+      res.clear();
+      expect(res.length, 0);
+      expect(res.isEmpty, isTrue);
+    });
+  });
+
+  group('merge extension', () {
+    test('adopts the new response when the receiver is null', () {
+      PaginatedItemsResponse<_Item>? res;
+      final incoming = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a')],
+        paginationKey: 'p1',
+      );
+
+      res = res.merge(incoming);
+      expect(identical(res, incoming), isTrue);
+    });
+
+    test('merges into the receiver when it exists', () {
+      PaginatedItemsResponse<_Item>? res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a')],
+        paginationKey: 'p1',
+      );
+      final first = res;
+
+      res = res.merge(
+        PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [_Item('2', 'b')],
+          paginationKey: 'p2',
+        ),
+      );
+
+      expect(identical(res, first), isTrue, reason: 'merged in place');
+      expect(res.items.map(_idOf), ['1', '2']);
+      expect(res.paginationKey, 'p2');
+    });
+
+    test('replaces wholesale on reset', () {
+      PaginatedItemsResponse<_Item>? res = PaginatedItemsResponse<_Item>(
+        idGetter: _idOf,
+        listItems: const [_Item('1', 'a'), _Item('2', 'b')],
+        paginationKey: 'p1',
+      );
+
+      res = res.merge(
+        PaginatedItemsResponse<_Item>(
+          idGetter: _idOf,
+          listItems: const [_Item('9', 'z')],
+          paginationKey: null,
+        ),
+        reset: true,
+      );
+
+      expect(res.items.map(_idOf), ['9'], reason: 'old items discarded');
+    });
+  });
+
   group('PaginatedItemsResponse.findByUid', () {
     test('returns null when the id is absent', () {
       final res = PaginatedItemsResponse<_Item>(
@@ -200,7 +389,7 @@ void main() {
       expect(res.findByUid('nope'), isNull);
     });
 
-    test('returns null rather than throwing when items is null', () {
+    test('returns null on an empty response', () {
       final res = PaginatedItemsResponse<_Item>.empty(idGetter: _idOf)..clear();
       expect(res.findByUid('1'), isNull);
     });
@@ -214,9 +403,9 @@ void main() {
         paginationKey: null,
       );
 
-      expect(res[0]!.name, 'a');
+      expect(res[0].name, 'a');
       res[0] = const _Item('1', 'changed');
-      expect(res[0]!.name, 'changed');
+      expect(res[0].name, 'changed');
     });
   });
 }
