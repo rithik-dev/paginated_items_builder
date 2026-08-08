@@ -1,10 +1,12 @@
 # [PaginatedItemsBuilder](https://pub.dev/packages/paginated_items_builder) For Flutter
 [![pub package](https://img.shields.io/pub/v/paginated_items_builder.svg)](https://pub.dev/packages/paginated_items_builder)
+[![downloads](https://img.shields.io/pub/dm/paginated_items_builder)](https://pub.dev/packages/paginated_items_builder)
 [![likes](https://img.shields.io/pub/likes/paginated_items_builder)](https://pub.dev/packages/paginated_items_builder/score)
-[![popularity](https://img.shields.io/pub/popularity/paginated_items_builder)](https://pub.dev/packages/paginated_items_builder/score)
 [![pub points](https://img.shields.io/pub/points/paginated_items_builder)](https://pub.dev/packages/paginated_items_builder/score)
-[![code size](https://img.shields.io/github/languages/code-size/rithik-dev/paginated_items_builder)](https://github.com/rithik-dev/paginated_items_builder)
 [![license MIT](https://img.shields.io/badge/license-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+
+<a href="https://rithikbhandari.dev" target="_blank" rel="noopener"><img src="https://img.shields.io/badge/portfolio-rithikbhandari.dev-6C63FF?style=for-the-badge" alt="portfolio"></a>
+<a href="https://pub.dev/publishers/rithikbhandari.dev/packages" target="_blank" rel="noopener"><img src="https://img.shields.io/pub/publisher/paginated_items_builder?style=for-the-badge" alt="publisher"></a>
 
 ---
 
@@ -25,7 +27,7 @@ Saves the results in state to avoid unnecessary api calls everytime screen is pu
 - **[🛫 Migration Guides](#-migration-guides)**
   - [Migration Guide from v1.x to v2.x+](#migration-guide-from-v1x-to-v2x)
 - **[🎯 Sample Usage](#-sample-usage)**
-- **[👤 Collaborators](#-collaborators)**
+- **[👤 Author](#-author)**
 
 ---
 
@@ -33,7 +35,7 @@ Saves the results in state to avoid unnecessary api calls everytime screen is pu
 
 | Loading Shimmer Animation | Loaded List View |
 |-----------------------------------|-------------------------------------|
-| <img src="https://user-images.githubusercontent.com/56810766/148798681-2077ac11-cdf4-46a8-8718-90e32661f1ab.jpeg" height="500"> | <img src="https://user-images.githubusercontent.com/56810766/148798666-6224bae3-e08c-4efb-b967-9cdc1bc49d6e.jpeg" height="500"> |
+| <img src="https://github.com/rithik-dev/paginated_items_builder/raw/master/screenshots/published/loading_shimmer.webp" height="500"> | <img src="https://github.com/rithik-dev/paginated_items_builder/raw/master/screenshots/unpublished/loaded_list.webp" height="500"> |
 
 ---
 
@@ -535,9 +537,11 @@ class PostsListWithStateHandledInternally extends StatelessWidget {
 
 ---
 
-# 👤 Collaborators
+# 👤 Author
 
+Built and maintained by **Rithik Bhandari**, a mobile developer building cross-platform apps with Flutter.
 
-| Name | GitHub | Linkedin |
-|-----------------------------------|-------------------------------------|-------------------------------------|
-| Rithik Bhandari | [github/rithik-dev](https://github.com/rithik-dev) | [linkedin/rithik-bhandari](https://www.linkedin.com/in/rithik-bhandari) |
+- 🌐 Portfolio: **[rithikbhandari.dev](https://rithikbhandari.dev)**
+- 📦 More packages: [pub.dev/publishers/rithikbhandari.dev](https://pub.dev/publishers/rithikbhandari.dev/packages)
+- 💻 GitHub: [@rithik-dev](https://github.com/rithik-dev)
+- 💼 LinkedIn: [rithik-bhandari](https://www.linkedin.com/in/rithik-bhandari)

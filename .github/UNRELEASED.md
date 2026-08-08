@@ -24,3 +24,6 @@
 * Fixed all 30 dartdoc warnings the package emitted, mostly unresolved doc references in the public API.
 * Added a migration guide to the README for moving from 1.x.
 * Example app: upgraded the Android build to Gradle 8.14.5, AGP 8.11.1, Kotlin 2.2.20 and Java 17. It was on Gradle 8.3, below Flutter's current minimum of 8.7, so `flutter build apk` failed outright.
+* Added a screenshot to the package listing, so pub.dev now shows a thumbnail in search results and a gallery on the package page.
+* README: dropped a badge that had stopped rendering, swapped in monthly downloads, and added links to the author's portfolio and other packages.
+* README: the screenshots are now served from this repository instead of GitHub's attachment CDN, which was outside the repo's control and could have gone stale.
